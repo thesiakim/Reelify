@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'accounts',
     'movies',
+    'debug_toolbar',
     'rest_framework',
     'rest_framework.authtoken',
     'dj_rest_auth',
@@ -68,6 +69,7 @@ REST_FRAMEWORK = {
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -188,3 +190,14 @@ REST_FRAMEWORK = {
 REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'accounts.serializers.CustomRegisterSerializer',
 }
+
+# Debug-Toolbar
+if DEBUG:
+    INTERNAL_IPS = ['127.0.0.1', ] 
+
+    import mimetypes
+    mimetypes.add_type("application/javascript", ".js", True)
+
+    # DEBUG_TOOLBAR_CONFIG = {
+    #     'INTERCEPT_REDIRECTS': False,
+    # }

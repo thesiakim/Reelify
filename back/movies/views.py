@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404, get_list_or_404
 from django.conf import settings
 from django.core.cache import cache
+from django.db import connection
 from django.db.models import Q
 from django.db.models import Count
+from django.db.models import Prefetch
 from datetime import datetime, timedelta
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import NotFound
@@ -11,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from rest_framework import status
 
-from movies.models import Movie, Country, Genre
+from movies.models import Movie, Country, Genre, Review
 from .serializers import MovieListSerializer, MovieDetailSerializer
 
 
@@ -270,7 +272,37 @@ class MovieSearchListView(ListAPIView):
 
 #-------------------------------------------------------------------------------------------------------------
 
-# 영화 상세 페이지
+# @api_view(['GET'])
+# def movie_detail(request, pk):
+#     # 기존 로직
+#     prefetch_reviews = Prefetch(
+#         'review_set',
+#         queryset=Review.objects.select_related('user').prefetch_related('likes')
+#     )
+#     movie = Movie.objects.prefetch_related(
+#         'genres',
+#         'actors',
+#         'directors',
+#         'providers',
+#         'countries',
+#         'likes',
+#         prefetch_reviews
+#     ).get(pk=pk)
+    
+#     serializer = MovieDetailSerializer(movie)
+    
+#     # SQL 쿼리 확인
+#     for query in connection.queries:
+#         print(query)
+    
+#     return Response(serializer.data)
+
+'''
+쿼리 최적화를 진행한 뒤 Debug Toolbar로 실행 시간을 비교했지만 
+대규모 데이터셋 환경이 아니기 때문에 유의미한 차이는 없었음
+따라서 기존 코드 유지
+'''
+# 영화 상세 페이지 
 @api_view(['GET'])
 def movie_detail(request, pk):
     movie = get_object_or_404(Movie, pk=pk)
