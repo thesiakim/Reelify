@@ -1,6 +1,9 @@
 from django.db.models import Avg, Count
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Movie, Genre, Country, Review, Director, Actor, Provider, Video
+from .models import Movie, Genre, Country, Review, Director, Actor, Provider, Video, Comment
+
+User = get_user_model()
 
 # 필터링된 영화 리스트 반환
 class MovieListSerializer(serializers.ModelSerializer):
@@ -44,6 +47,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'user', 'content', 'rating', 'likes_count', 'is_spoiler', 'created_at')
 
+# -------------------------------------------------------------------------------------------------------
 # 영화 상세 페이지 
 class MovieDetailSerializer(serializers.ModelSerializer):
     
@@ -75,5 +79,43 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         return ReviewSerializer(top_reviews, many=True).data
     
     # 해당 영화를 추천한 유저 수 반환
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+# -------------------------------------------------------------------------------------------------------
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username',)
+
+
+# 리뷰 목록 
+class ReviewListSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    likes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = ('id', 'user', 'content', 'rating', 'likes_count', 'is_spoiler', 'created_at',)
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+
+# 리뷰에 대한 댓글, 댓글에 대한 대댓글
+class CommentListSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    replies = serializers.SerializerMethodField()      # 대댓글 
+    likes_count = serializers.SerializerMethodField()  # 추천 수 
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'user', 'content', 'likes_count', 'created_at', 'replies',)
+
+    def get_replies(self, obj):
+        replies = obj.replies.all()  # related_name='replies'로 연결된 대댓글
+        return CommentListSerializer(replies, many=True).data
+
     def get_likes_count(self, obj):
         return obj.likes.count()

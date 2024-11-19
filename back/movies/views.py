@@ -13,8 +13,8 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from rest_framework import status
 
-from movies.models import Movie, Country, Genre, Review
-from .serializers import MovieListSerializer, MovieDetailSerializer
+from movies.models import Movie, Country, Genre, Review, Comment
+from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, CommentListSerializer
 
 
 import re
@@ -297,15 +297,64 @@ class MovieSearchListView(ListAPIView):
     
 #     return Response(serializer.data)
 
+# 영화 상세 페이지 
 '''
 쿼리 최적화를 진행한 뒤 Debug Toolbar로 실행 시간을 비교했지만 
 대규모 데이터셋 환경이 아니기 때문에 유의미한 차이는 없었음
 따라서 기존 코드 유지
 '''
-# 영화 상세 페이지 
 @api_view(['GET'])
-def movie_detail(request, pk):
-    movie = get_object_or_404(Movie, pk=pk)
+def movie_detail(request, movie_pk):
+    movie = get_object_or_404(Movie, pk=movie_pk)
     serializer = MovieDetailSerializer(movie)
     return Response(serializer.data)
 
+#-------------------------------------------------------------------------------------------------------------
+
+# 특정 영화의 리뷰 목록
+'''
+- 리뷰가 없는 영화인 경우 빈 배열 [] 반환
+- 특정 영화에 대한 리뷰 목록, 각 리뷰에 대한 세부 정보(id, 작성자, 내용, 별점, 스포일러 여부, 추천수, 작성일),
+'''
+class ReviewListView(ListAPIView):
+    serializer_class = ReviewListSerializer
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        movie_id = self.kwargs.get('movie_pk')
+        movie = get_object_or_404(Movie, pk=movie_id)
+        return Review.objects.filter(movie=movie).order_by('-created_at')
+
+#-------------------------------------------------------------------------------------------------------------
+
+# 특정 리뷰의 댓글, 대댓글 목록
+'''
+- 각 리뷰에 달린 댓글의 세부 정보(id, 작성자, 내용, 추천수, 작성일), 
+- 각 댓글에 대한 대댓글의 세부 정보(id, 작성자, 내용, 추천수, 작성일)
+[
+    {
+        "id": 101,
+        "content": "재밌어요",
+        "replies": [
+            {"id": 102, "content": "저두요"},
+            {"id": 104, "content": "전 별로"}
+        ]
+    },
+    {
+        "id": 103,
+        "content": "괜찮음",
+        "replies": []
+    }
+]
+'''
+class ReviewCommentListView(ListAPIView):
+    serializer_class = CommentListSerializer
+    pagination_class = PageNumberPagination
+
+    # 특정 리뷰에 연결된 최상위 댓글 조회 
+    # 직렬화하면서 대댓글 포함
+    def get_queryset(self):
+        review_id = self.kwargs.get('review_pk')
+        return Comment.objects.filter(review_id=review_id, parent_comment__isnull=True).order_by('-created_at')
+
+# -------------------------------------------------------------------------------------------------------------
