@@ -12,7 +12,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework import status
 
 from movies.models import Movie, Country, Genre
-from .serializers import MovieListSerializer
+from .serializers import MovieListSerializer, MovieDetailSerializer
 
 
 import re
@@ -266,7 +266,14 @@ class MovieSearchListView(ListAPIView):
                 Q(original_title__icontains=search_query)
             )
 
-        if not queryset.exists():
-            raise NotFound("검색어와 일치하는 영화가 없습니다.")
-
         return queryset
+
+#-------------------------------------------------------------------------------------------------------------
+
+# 영화 상세 페이지
+@api_view(['GET'])
+def movie_detail(request, pk):
+    movie = get_object_or_404(Movie, pk=pk)
+    serializer = MovieDetailSerializer(movie)
+    return Response(serializer.data)
+

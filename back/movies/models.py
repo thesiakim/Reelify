@@ -39,7 +39,6 @@ class Movie(models.Model):
     id = models.IntegerField(primary_key=True)
     title = models.CharField(max_length=100)           # 영화 제목
     original_title = models.CharField(max_length=100)  # 원제
-    origin_country = models.CharField(max_length=20)   # 국가
     overview = models.TextField()                      # 줄거리
     release_date = models.CharField(max_length=50)     # 개봉일
     popularity = models.FloatField()                   # 인기도
