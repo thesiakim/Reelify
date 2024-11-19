@@ -6,6 +6,7 @@ import sys
 import json
 
 '''
+- 프로젝트 루트 경로에 있는 상태에서 실행해야 db.json 파일 생성 시 경로를 찾아갈 수 있음
 - settings.py를 찾지 못하는 문제로 인해 경로 지정 
 - 에러 확인을 위해 json 파일을 분리하여 데이터를 저장했으며 최종적으로 로드하여 사용하는 파일은 db.json
 
@@ -77,7 +78,7 @@ def save_data():
     # 영화 리스트 조회 + 영화 디테일 + 배우 + 감독 + 배급사 + 장르 
     movie_list_url = 'movie/popular'
 
-    for i in range(1, 61):
+    for i in range(1, 71):
         movie_list_params = {
             'language':'ko-KR',
             'region': 'KR',
@@ -231,9 +232,23 @@ def save_data():
             else:
                 continue
 
-            # JSON 파일 생성 전 한번 더 데이터 존재 여부 확인
+            # 개별 영화의 관련 영상 조회
+            video_url = 'movie/' + str(id) + '/videos'
+            video_params = {
+                'language': 'ko-KR',
+                'api_key': API_KEY
+            }
+            videos = requests.get(base_url + video_url, params=video_params).json()
+
+            # 비디오 데이터 존재 여부 확인
+            if videos['results'] == []:
+                print(f"비디오 데이터 없음: {title} (ID: {id})")
+                continue
+
+            # JSON 파일 생성 전 영화 데이터 존재 여부 확인 (비디오 데이터 조건 포함)
             if all([id, title, original_title, overview, release_date, popularity, poster_path, backdrop_path, runtime, genres, actors, directors, providers_for_movie_list, countries]):
-                data = {
+                # 영화 데이터를 한 번만 저장
+                movie_data = {
                     "model": "movies.movie",
                     "pk": id,
                     "fields": {
@@ -253,41 +268,37 @@ def save_data():
                         "countries": countries
                     }
                 }
-                movie_db.append(data)
-            
-            else:
-                continue
-            
-            # 개별 영화의 관련 영상 조회
-            video_url = 'movie/' + str(id) + '/videos'
-            video_params = {
-                'language':'ko-KR',
-                'api_key':API_KEY
-            }
-            videos = requests.get(base_url+video_url,params=video_params).json()
+                movie_db.append(movie_data)  # 영화 데이터 저장
 
-            if not videos['results']:
-                print('비디오 데이터 없음')
-                continue
+                # 비디오 데이터 반복 저장 (외래키 관련 에러를 피하기 위해 영화가 저장된 이후에 저장해야 함)
+                for video in videos['results']:
+                    video_id = video.get('id')
+                    video_movie_id = id
+                    key = video.get('key')
 
-            for video in videos['results']:
-                video_id = video.get('id')
-                video_movie_id = id
-                key = video.get('key')
+                    if not all([video_id, video_movie_id, key]):
+                        print(f"비디오 데이터 유효하지 않음: {title} (Video ID: {video_id})")
+                        continue
 
-                if not all([video_id, video_movie_id, key]):
-                    print('비디오 데이터 없음')
-                    continue
-
-                data = {
-                    "model": "movies.video",
-                    "pk": video_id,
-                    "fields": {
-                        "movie": video_movie_id,
-                        "key": key
+                    # 영화 데이터가 저장된 이후 비디오 데이터 저장
+                    video_data = {
+                        "model": "movies.video",
+                        "pk": video_id,
+                        "fields": {
+                            "movie": video_movie_id,
+                            "key": key
+                        }
                     }
-                }
-                video_db.append(data)
+                    video_db.append(video_data)  # 비디오 데이터 저장
+            else:
+                print('영화 데이터 저장 조건 불만족')
+                continue
+
+
+
+            
+            
+            
 
     save_to_json(genre_db, 'genre_db')
     save_to_json(actor_db, 'actor_db')
@@ -300,7 +311,7 @@ save_data()
 
 
 # 파일 경로 설정
-fixture_dir = 'movies/fixtures/'
+fixture_dir = os.path.abspath('back/movies/fixtures/')
 
 # 파일 목록
 files = [
