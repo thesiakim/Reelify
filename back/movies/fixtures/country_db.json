@@ -1,0 +1,58 @@
+[
+    {
+        "model": "movies.country",
+        "pk": 1,
+        "fields": {
+            "name": "미국",
+	        "code": "US"
+        }
+    },
+    {
+        "model": "movies.country",
+        "pk": 2,
+        "fields": {
+            "name": "한국",
+            "code": "KR"
+        }
+    },
+    {
+        "model": "movies.country",
+        "pk": 3,
+        "fields": {
+            "name": "영국",
+            "code": "GB"
+        }
+    },
+    {
+        "model": "movies.country",
+        "pk": 4,
+        "fields": {
+            "name": "일본",
+            "code": "JP"
+        }
+    },
+    {
+        "model": "movies.country",
+        "pk": 5,
+        "fields": {
+            "name": "중국",
+            "code": "CN"
+        }
+    },
+    {
+        "model": "movies.country",
+        "pk": 6,
+        "fields": {
+            "name": "프랑스",
+            "code": "FR"
+        }
+    },
+    {
+        "model": "movies.country",
+        "pk": 7,
+        "fields": {
+            "name": "기타 국가",
+            "code": "Other"
+        }
+    }
+]

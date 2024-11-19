@@ -1,0 +1,95 @@
+import { createRouter, createWebHistory } from "vue-router";
+import HomeView from "../views/HomeView.vue";
+import SignUpView from "@/views/Accounts/SignUpView.vue";
+import AccountUpdateView from "@/views/Accounts/AccountUpdateView.vue";
+import MovieListView from "@/views/Movies/MovieListView.vue";
+import MovieDetailView from "@/views/Movies/MovieDetailView.vue";
+import MovieSearchView from "@/views/Movies/MovieSearchView.vue";
+import ReviewListView from "@/views/Movies/ReviewListView.vue";
+import ReviewCreateView from "@/views/Movies/ReviewCreateView.vue";
+import MovieMapView from "@/views/Movies/MovieMapView.vue";
+import MovieRecommendedView from "@/views/Movies/MovieRecommendedView.vue";
+import MovieLegendaryView from "@/views/Movies/MovieLegendaryView.vue";
+import UserPageView from "@/views/Community/UserPageView.vue";
+import UserReviewListView from "@/views/Community/UserReviewListView.vue";
+import UserFollowView from "@/views/Community/UserFollowView.vue";
+
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
+      path: "/",
+      name: "HomeView",
+      component: HomeView,
+    },
+    {
+      path: "/sign-up",
+      name: "SignUpView",
+      component: SignUpView,
+    },
+    {
+      path: "/account-update",
+      name: "AccountUpdateView",
+      component: AccountUpdateView,
+    },
+    {
+      path: "/movie-list",
+      name: "MovieListView",
+      component: MovieListView,
+    },
+    {
+      path: "/:movie_id/movie-detail",
+      name: "MovieDetailView",
+      component: MovieDetailView,
+    },
+    {
+      path: "/movie-search",
+      name: "MovieSearchView",
+      component: MovieSearchView,
+    },
+    {
+      path: "/:movie_id/review-list",
+      name: "ReviewListView",
+      component: ReviewListView,
+    },
+    {
+      path: "/:movie_id/review-create",
+      name: "ReviewCreateView",
+      component: ReviewCreateView,
+    },
+    {
+      path: "/movie-map",
+      name: "MovieMapView",
+      component: MovieMapView,
+    },
+    {
+      path: "/movie-recommended",
+      name: "MovieRecommendedView",
+      component: MovieRecommendedView,
+    },
+    {
+      path: "/movie-legendary",
+      name: "MovieLegendaryView",
+      component: MovieLegendaryView,
+    },
+    {
+      path: "/:username/user-page",
+      name: "UserPageView",
+      component: UserPageView,
+      children: [
+        {
+          path: "user-review-list",
+          name: "UserReviewListView",
+          component: UserReviewListView,
+        },
+        {
+          path: "user-follow",
+          name: "UserFollowView",
+          component: UserFollowView,
+        },
+      ],
+    },
+  ],
+});
+
+export default router;
