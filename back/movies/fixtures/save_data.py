@@ -266,6 +266,10 @@ def save_data():
             }
             videos = requests.get(base_url+video_url,params=video_params).json()
 
+            if not videos['results']:
+                print('비디오 데이터 없음')
+                continue
+
             for video in videos['results']:
                 video_id = video.get('id')
                 video_movie_id = id
