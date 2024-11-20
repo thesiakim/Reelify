@@ -35,3 +35,26 @@ RouterLink {
   font-weight: normal;
   font-style: normal;
 }
+
+/* 반응형 미디어 쿼리 */
+@media (max-width: 768px) {
+  body {
+    background-color: lightgray;
+  }
+
+  .container {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    background-color: #f2f2f2;
+  }
+
+  .container {
+    padding: 5px;
+    font-size: 12px;
+  }
+}
