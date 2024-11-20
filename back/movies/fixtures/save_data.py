@@ -78,7 +78,7 @@ def save_data():
     # 영화 리스트 조회 + 영화 디테일 + 배우 + 감독 + 배급사 + 장르 
     movie_list_url = 'movie/popular'
 
-    for i in range(1, 71):
+    for i in range(1, 151):
         movie_list_params = {
             'language':'ko-KR',
             'region': 'KR',

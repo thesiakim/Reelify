@@ -60,10 +60,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    # permission
+    # Permission
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+    # Pagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,  # 한 페이지당 영화 20개
 }
 
 ACCOUNT_EMAIL_VERIFICATION = 'none'
@@ -178,12 +181,6 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',  # 고유 식별자
     }
-}
-
-# 페이지네이션 설정
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,  # 한 페이지당 영화 20개
 }
 
 # 회원 가입 시 custom user serializer 사용
