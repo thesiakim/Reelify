@@ -209,6 +209,7 @@ class MovieFilteringListView(ListAPIView):
 
     def get_queryset(self):
         queryset = Movie.objects.all()
+        filter_conditions = Q()
 
         # 장르 필터링
         genre_ids = self.request.query_params.getlist('genre', None)
@@ -217,8 +218,7 @@ class MovieFilteringListView(ListAPIView):
                 genres = Genre.objects.filter(id__in=genre_ids)
                 if not genres.exists():
                     raise NotFound("해당 장르의 영화는 존재하지 않습니다.")
-                for genre in genres:
-                    queryset = queryset.filter(genres=genre)
+                filter_conditions |= Q(genres__in=genres)
             except Genre.DoesNotExist:
                 raise NotFound("해당 장르의 영화는 존재하지 않습니다.")
 
@@ -229,10 +229,12 @@ class MovieFilteringListView(ListAPIView):
                 countries = Country.objects.filter(id__in=country_ids)
                 if not countries.exists():
                     raise NotFound("해당 국가의 영화는 존재하지 않습니다.")
-                for country in countries:
-                    queryset = queryset.filter(countries=country)
+                filter_conditions |= Q(countries__in=countries)
             except Country.DoesNotExist:
                 raise NotFound("해당 국가의 영화는 존재하지 않습니다.")
+
+        # 조건을 기반으로 필터링
+        queryset = queryset.filter(filter_conditions).distinct()
 
         # 정렬 기준 처리
         sort_option = self.request.query_params.get('sort', 'recent')  # 기본값: 최근 개봉일 순

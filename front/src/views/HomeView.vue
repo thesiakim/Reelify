@@ -79,8 +79,16 @@
         <span class="visually-hidden">Next</span>
       </button>
     </div>
-    <div class="mt-4 text-center">
+    <div v-if="store.isLogin === false" class="mt-4 text-center">
       <h2>지금 여기서 나눠보세요</h2>
+      <RouterLink
+        class="routerlink gradient-text"
+        :to="{ name: 'MovieListView' }"
+        >Reelify 하러 가기</RouterLink
+      >
+    </div>
+    <div v-if="store.isLogin === true" class="mt-4 text-center">
+      <h2>환영합니다.</h2>
       <RouterLink
         class="routerlink gradient-text"
         :to="{ name: 'MovieListView' }"
@@ -92,6 +100,9 @@
 
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
+import { useAccountStore } from "@/stores/accounts";
+
+const store = useAccountStore();
 </script>
 
 <style scoped>

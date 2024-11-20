@@ -28,10 +28,12 @@
 <script setup>
 import { ref } from "vue";
 import { useAccountStore } from "@/stores/accounts";
+import { useRouter } from "vue-router";
 
 const store = useAccountStore();
 const username = ref(null);
 const password = ref(null);
+const router = useRouter();
 
 const logIn = function () {
   const payload = {
@@ -39,6 +41,10 @@ const logIn = function () {
     password: password.value,
   };
   store.logIn(payload);
+  if (store.loginResult === true) {
+    closeModal();
+    router.push({ name: "HomeView" });
+  }
 };
 
 const emit = defineEmits(["close"]);
