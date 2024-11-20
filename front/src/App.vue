@@ -25,6 +25,8 @@ const moveLoginFormModal = function () {
 const closeModal = () => {
   showModal.value = false;
 };
+
+// navbar 설정
 onMounted(() => {
   // Bootstrap Modal 초기화
   const modalElement = document.getElementById("loginModal");
@@ -51,14 +53,14 @@ const navbarPositionClass = computed(() => {
 });
 
 // 영화 검색
-const query = ref(null)
-const store = useAccountStore()
-const API_URL = store.API_URL
-const searchResults = ref([])
+const query = ref(null);
+const store = useAccountStore();
+const API_URL = store.API_URL;
+const searchResults = ref([]);
 
 const searchMovie = function () {
   if (!query.value || query.value.trim() === "") {
-    alert("검색어를 입력해주세요.");  
+    alert("검색어를 입력해주세요.");
     return;
   }
 
@@ -68,19 +70,23 @@ const searchMovie = function () {
   })
     .then((response) => {
       searchResults.value = response.data; // 검색 결과 저장
-      store.searchResults = searchResults.value
-      query.value=''
-      console.log(searchResults.value)
+      store.searchResults = searchResults.value;
+      query.value = "";
+      console.log(searchResults.value);
       // console.log(searchResults.value);
 
-      router.push({ name: 'MovieSearchView' });
+      router.push({ name: "MovieSearchView" });
     })
     .catch((error) => {
       console.error("검색 중 에러 발생:", error);
     });
 };
 
-
+// 로그아웃
+const logOut = function () {
+  console.log("로그아웃 되었습니다.");
+  store.logOut();
+};
 </script>
 
 <template>
@@ -145,7 +151,12 @@ const searchMovie = function () {
                 >
               </li>
             </ul>
-            <form @submit.prevent="searchMovie" v-show="isNavExpanded" class="d-flex" role="search">
+            <form
+              @submit.prevent="searchMovie"
+              v-show="isNavExpanded"
+              class="d-flex"
+              role="search"
+            >
               <input
                 class="form-control me-2"
                 type="text"
@@ -155,22 +166,42 @@ const searchMovie = function () {
               />
               <button class="btn search-btn">Search</button>
             </form>
-
             <RouterLink
+              v-if="store.isLogin === false"
               class="d-flex routerlink nav-item"
               :to="{ name: 'SignUpView' }"
               :class="{ 'text-light': isHome, 'text-dark': !isHome }"
               >회원가입</RouterLink
             >
             <p
+              v-if="store.isLogin === false"
               @click="moveLoginFormModal"
-              class="d-flex routerlink nav-item"
+              class="d-flex routerlink nav-item relLog"
               :class="{ 'text-light': isHome, 'text-dark': !isHome }"
             >
               로그인
             </p>
 
             <LoginFormModal v-if="showModal" @close="closeModal" />
+
+            <RouterLink
+              v-if="store.isLogin === true"
+              class="d-flex routerlink nav-item"
+              :to="{
+                name: 'UserPageView',
+                params: { username: store.userName },
+              }"
+              :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+              >마이페이지</RouterLink
+            >
+            <p
+              v-if="store.isLogin === true"
+              @click="logOut"
+              class="d-flex routerlink nav-item relLog"
+              :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+            >
+              로그아웃
+            </p>
           </div>
         </div>
       </nav>
@@ -226,5 +257,8 @@ const searchMovie = function () {
 }
 .navbar-relative {
   position: relative;
+}
+.relLog {
+  cursor: pointer;
 }
 </style>

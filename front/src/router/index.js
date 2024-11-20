@@ -73,7 +73,7 @@ const router = createRouter({
       component: MovieLegendaryView,
     },
     {
-      path: "/:username/user-page",
+      path: "/user-page/:username",
       name: "UserPageView",
       component: UserPageView,
       children: [
