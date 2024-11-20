@@ -4,10 +4,11 @@ from . import views
 
 urlpatterns = [
     path('movies/reviews/<int:review_pk>/comments/', ReviewCommentListView.as_view()),  # 특정 리뷰의 댓글, 대댓글 반환
-    path('movies/<int:movie_id>/like/', views.movie_like_toggle),                       # 특정 영화 추천, 추천 취소
+    path('movies/<int:movie_pk>/like/', views.movie_like_toggle),                       # 특정 영화 추천, 추천 취소
     path('movies/<int:movie_pk>/create-review/', views.create_review),                  # 특정 영화에 리뷰 작성
     path('movies/<int:movie_pk>/reviews/', ReviewListView.as_view()),                   # 특정 영화의 리뷰 목록 반환
     path('reviews/<int:review_pk>/comments/', views.comment_create),                    # 리뷰에 대한 댓글 작성
+    path('reviews/<int:review_pk>/like/', views.review_like_toggle),                    # 특정 리뷰 추천, 추천 취소 
     path('reviews/<int:review_pk>/detail/', views.review_detail),                       # 특정 리뷰 조회 (스포일러 표시된 리뷰 조회 시 활용)
     path('comments/<int:comment_pk>/replies/', views.comment_create),                   # 특정 댓글에 대한 대댓글 작성
     path('comments/<int:comment_pk>/', views.comment_delete),                           # 댓글, 대댓글 삭제

@@ -196,8 +196,8 @@ def box_office(request):
 # 영화 추천, 추천 취소
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def movie_like_toggle(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
+def movie_like_toggle(request, movie_pk):
+    movie = get_object_or_404(Movie, pk=movie_pk)
 
     if request.user in movie.likes.all():
         movie.likes.remove(request.user)
@@ -446,6 +446,21 @@ def review_detail(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
     serializer = ReviewListSerializer(review)
     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def review_like_toggle(request, review_pk):
+    review = get_object_or_404(Review, pk=review_pk)
+
+    if request.user in review.likes.all():
+        review.likes.remove(request.user)
+        liked = False
+    else:
+        review.likes.add(request.user)
+        liked = True
+    return Response({'liked': liked, 'likes_count': review.likes.count()}, status=status.HTTP_200_OK)
+    
+
 
 # -------------------------------------------------------------------------------------------------------------
 
