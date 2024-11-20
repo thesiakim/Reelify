@@ -1553,14 +1553,6 @@
     },
     {
         "model": "movies.provider",
-        "pk": 425,
-        "fields": {
-            "name": "HBO Go",
-            "logo_path": "/f7z2izTDn3zyYtDymYHqhjEqFuj.jpg"
-        }
-    },
-    {
-        "model": "movies.provider",
         "pk": 426,
         "fields": {
             "name": "SF Anytime",
@@ -2395,7 +2387,7 @@
         "model": "movies.provider",
         "pk": 576,
         "fields": {
-            "name": "Klik Film",
+            "name": "KlikFilm",
             "logo_path": "/iqq9pxAgCVM4jD9C21kpWj8ZBTG.jpg"
         }
     },
@@ -4533,6 +4525,14 @@
         "fields": {
             "name": "BATTLEZONE Amazon Channel",
             "logo_path": "/59jxqvvHok2RxWZ4gsdNs33be5r.jpg"
+        }
+    },
+    {
+        "model": "movies.provider",
+        "pk": 2235,
+        "fields": {
+            "name": "tabii",
+            "logo_path": "/uWVpt3iJ2pLKtFZ69rAKP0EDVVx.jpg"
         }
     },
     {

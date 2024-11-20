@@ -119,3 +119,21 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     def get_likes_count(self, obj):
         return obj.likes.count()
+
+#------------------------------------------------------------------------------------------------------------
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'review', 'parent_comment', 'content', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'review', 'parent_comment']
+
+
+
+#------------------------------------------------------------------------------------------------------------
+# 추후 삭제 예정
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ('rating', 'content', 'is_spoiler',)
+        read_only_fields = ('id', 'user', 'created_at', 'updated_at', 'likes',)   

@@ -85,5 +85,5 @@ class Comment(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies', null=True, blank=True)
     content = models.CharField(max_length=200)
-    created_at = models.DateTimeField(auto_now_add=True)  # 작성 시간 추가
-    updated_at = models.DateTimeField(auto_now=True)      # 수정 시간 추가
+    created_at = models.DateTimeField(auto_now_add=True)  
+    updated_at = models.DateTimeField(auto_now=True)      
