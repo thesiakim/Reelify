@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.conf import settings
 from django.core.cache import cache
+from django.contrib.auth import get_user_model
 from django.db import connection
 from django.db.models import Q
 from django.db.models import Count
@@ -15,13 +16,14 @@ from rest_framework.generics import ListAPIView
 from rest_framework import status
 
 from movies.models import Movie, Country, Genre, Review, Comment
-from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, CommentListSerializer, CommentSerializer
+from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer
 
 
 import re
 import random
 import requests
 
+User = get_user_model()
 
 '''
 회원 가입 시 사용
@@ -190,6 +192,24 @@ def box_office(request):
     return Response(results)
 
 #-------------------------------------------------------------------------------------------------------------
+
+# 영화 추천, 추천 취소
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def movie_like_toggle(request, movie_id):
+    movie = get_object_or_404(Movie, id=movie_id)
+
+    if request.user in movie.likes.all():
+        movie.likes.remove(request.user)
+        liked = False
+    else:
+        movie.likes.add(request.user)
+        liked = True
+
+    return Response({'liked': liked, 'likes_count': movie.likes.count()}, status=status.HTTP_200_OK)
+
+
+
 
 '''
 요청 형식 : 다중 조건 만족 
@@ -420,6 +440,13 @@ def review(request, review_pk):
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# 단일 리뷰 조회 : 필요 없을 수도 있기 때문에 추후 삭제 가능성 있음 
+@api_view(['GET'])
+def review_detail(request, review_pk):
+    review = get_object_or_404(Review, pk=review_pk)
+    serializer = ReviewListSerializer(review)
+    return Response(serializer.data)
+
 # -------------------------------------------------------------------------------------------------------------
 
 # 댓글, 대댓글 작성
@@ -469,3 +496,45 @@ def comment_delete(request, comment_pk):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 # -------------------------------------------------------------------------------------------------------------
+
+# 프로필 이미지 변경
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_profile_image(request):
+    user = request.user
+    profile_img = request.FILES.get('profile_img')
+    
+    if not profile_img:
+        return Response({'message': '이미지를 지정해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    user.profile_img = profile_img
+    user.save()
+    
+    return Response(status=status.HTTP_200_OK)
+
+
+# 유저 페이지 
+@api_view(['GET'])
+def user_page(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    serializer = MyPageSerializer(user)
+    return Response(serializer.data)
+
+# 팔로우, 언팔로우
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_follow(request, username):
+    target_user = get_object_or_404(User, username=username)
+    user = request.user
+
+    if target_user == user:
+        return Response({"message": "자기 자신을 팔로우할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if target_user in user.followings.all():
+        user.followings.remove(target_user)
+        is_following = False
+    else:
+        user.followings.add(target_user)
+        is_following = True
+
+    return Response({'is_following': is_following, 'followings_count': user.followings.count()})

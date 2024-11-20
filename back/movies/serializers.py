@@ -102,6 +102,13 @@ class ReviewListSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return obj.likes.count()
 
+# # 단일 리뷰
+# class ReviewSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Review
+#         fields = ('rating', 'content', 'is_spoiler',)
+#         read_only_fields = ('id', 'user', 'created_at', 'updated_at', 'likes',)   
+
 
 # 리뷰에 대한 댓글, 댓글에 대한 대댓글
 class CommentListSerializer(serializers.ModelSerializer):
@@ -122,18 +129,81 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 #------------------------------------------------------------------------------------------------------------
 
+# 댓글 작성 및 수정
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'review', 'parent_comment', 'content', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'created_at', 'updated_at', 'user', 'review', 'parent_comment']
-
-
+        fields = ('id', 'user', 'review', 'parent_comment', 'content', 'created_at', 'updated_at',)
+        read_only_fields = ('id', 'created_at', 'updated_at', 'user', 'review', 'parent_comment',)
 
 #------------------------------------------------------------------------------------------------------------
-# 추후 삭제 예정
-class ReviewSerializer(serializers.ModelSerializer):
+
+# 회원 프로필 사진 변경
+class UserImageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Review
-        fields = ('rating', 'content', 'is_spoiler',)
-        read_only_fields = ('id', 'user', 'created_at', 'updated_at', 'likes',)   
+        model = User
+        fields = ('profile_img',)
+
+# 마이페이지
+class MyPageSerializer(serializers.ModelSerializer):
+    profile_img = serializers.ImageField()
+    username = serializers.CharField()
+    followings_count = serializers.IntegerField(source='followings.count', read_only=True)
+    followers_count = serializers.IntegerField(source='followers.count', read_only=True)
+    written_reviews = serializers.SerializerMethodField()
+    written_comments = serializers.SerializerMethodField()
+    liked_reviews = serializers.SerializerMethodField()
+    liked_movies = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'profile_img',
+            'username',
+            'followings_count',
+            'followers_count',
+            'written_reviews',
+            'written_comments',
+            'liked_reviews',
+            'liked_movies',
+        )
+
+    def get_written_reviews(self, obj):
+        reviews = obj.review_set.select_related('movie')   # 성능 최적화 : select_related
+        return [
+            {
+                'id': review.id,
+                'content': review.content,
+                'movie': {
+                    'id': review.movie.id,
+                    'title': review.movie.title,
+                    'poster_path': review.movie.poster_path
+                }
+            }
+            for review in reviews
+        ]
+
+    def get_written_comments(self, obj):
+        comments = obj.comment_set.all()
+        return [{'id': comment.id, 'content': comment.content, 'review_id': comment.review.id} for comment in comments]
+
+    def get_liked_reviews(self, obj):
+        liked_reviews = obj.like_reviews.select_related('movie')  
+        return [
+            {
+                'id': review.id,
+                'content': review.content,
+                'movie': {
+                    'id': review.movie.id,
+                    'title': review.movie.title,
+                    'poster_path': review.movie.poster_path
+                }
+            }
+            for review in liked_reviews
+        ]
+
+    def get_liked_movies(self, obj):
+        liked_movies = obj.like_movies.all()
+        return [{'id': movie.id, 'title': movie.title, 'poster_path': movie.poster_path} for movie in liked_movies]
+
+#------------------------------------------------------------------------------------------------------------
