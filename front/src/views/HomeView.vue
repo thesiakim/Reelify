@@ -1,5 +1,3 @@
-//Home view
-
 <template>
   <div>
     <div id="carouselExampleCaptions" class="carousel slide">
@@ -81,14 +79,15 @@
     </div>
     <div v-if="store.isLogin === false" class="mt-4 text-center">
       <h2>지금 여기서 나눠보세요</h2>
-      <RouterLink
-        class="routerlink gradient-text"
-        :to="{ name: 'MovieListView' }"
-        >Reelify 하러 가기</RouterLink
+      <RouterLink class="routerlink gradient-text" :to="{ name: 'SignUpView' }"
+        >Reelify 회원 되기</RouterLink
       >
     </div>
     <div v-if="store.isLogin === true" class="mt-4 text-center">
-      <h2>환영합니다.</h2>
+      <div class="welcome-container">
+        <h2>환영합니다.</h2>
+        <h2 class="gradient-name">{{ store.userName }}님</h2>
+      </div>
       <RouterLink
         class="routerlink gradient-text"
         :to="{ name: 'MovieListView' }"
@@ -123,6 +122,12 @@ const store = useAccountStore();
   text-decoration: none;
   color: #a1eebd;
 }
+.welcome-container {
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 .gradient-text {
   background: linear-gradient(90deg, #ffccea, #a1eebd);
@@ -130,5 +135,12 @@ const store = useAccountStore();
   -webkit-text-fill-color: transparent;
   font-weight: bold; /* 텍스트 강조 (선택사항) */
   font-size: 1.5rem; /* 텍스트 크기 조정 (선택사항) */
+}
+
+.gradient-name {
+  background: linear-gradient(90deg, #a1eebd, #ffccea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold; /* 텍스트 강조 (선택사항) */ /* 텍스트 크기 조정 (선택사항) */
 }
 </style>

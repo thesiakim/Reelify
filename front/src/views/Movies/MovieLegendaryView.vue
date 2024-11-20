@@ -1,5 +1,5 @@
 <template>
-  <div class="top-container">
+  <div class="container">
     <h1>👑명예의 전당👑</h1>
     <div class="topMovie">
       <div class="image-slider">
@@ -66,7 +66,7 @@ watch(topMovieList, (newList) => {
 </script>
 
 <style scoped>
-.top-container {
+.container {
   text-align: center;
 }
 .topMovie {

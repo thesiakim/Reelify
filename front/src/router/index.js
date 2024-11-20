@@ -38,12 +38,12 @@ const router = createRouter({
       component: MovieListView,
     },
     {
-      path: "/:movie_id/movie-detail",
+      path: "/movie-detail/:movie_id",
       name: "MovieDetailView",
       component: MovieDetailView,
     },
     {
-      path: "/movie-search",
+      path: "/movie-search/:movieName",
       name: "MovieSearchView",
       component: MovieSearchView,
     },

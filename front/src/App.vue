@@ -8,7 +8,8 @@ import { useAccountStore } from "./stores/accounts";
 
 const route = useRoute();
 const router = useRouter();
-const isHome = computed(() => route.path === "/");
+const isHome = computed(() => route.name === "HomeView");
+const isDetail = computed(() => route.name === "MovieDetailView");
 
 const isNavExpanded = ref(true);
 
@@ -69,13 +70,17 @@ const searchMovie = function () {
     url: `${API_URL}/api/v1/movies/search/?query=${query.value}`,
   })
     .then((response) => {
-      searchResults.value = response.data; // 검색 결과 저장
+      searchResults.value = response.data.results; // 검색 결과 저장
       store.searchResults = searchResults.value;
-      query.value = "";
+
       console.log(searchResults.value);
       // console.log(searchResults.value);
 
-      router.push({ name: "MovieSearchView" });
+      router.push({
+        name: "MovieSearchView",
+        params: { movieName: query.value },
+      });
+      query.value = "";
     })
     .catch((error) => {
       console.error("검색 중 에러 발생:", error);
@@ -97,7 +102,9 @@ const logOut = function () {
           'navbar',
           'navbar-expand-lg',
           navbarPositionClass,
-          isHome ? 'bg-transparent text-lihgt' : 'bg-transparent text-dark',
+          isHome || isDetail
+            ? 'bg-transparent text-light'
+            : 'bg-transparent text-dark',
         ]"
       >
         <div class="container-fluid">
@@ -122,14 +129,20 @@ const logOut = function () {
                 <RouterLink
                   class="routerlink"
                   :to="{ name: 'MovieListView' }"
-                  :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+                  :class="{
+                    'text-light': isHome || isDetail,
+                    'text-dark': !isHome && !isDetail,
+                  }"
                   >영화</RouterLink
                 >
               </li>
               <li class="nav-item">
                 <RouterLink
                   class="routerlink"
-                  :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+                  :class="{
+                    'text-light': isHome || isDetail,
+                    'text-dark': !isHome && !isDetail,
+                  }"
                   :to="{ name: 'MovieLegendaryView' }"
                   >명예의 전당</RouterLink
                 >
@@ -137,7 +150,10 @@ const logOut = function () {
               <li class="nav-item">
                 <RouterLink
                   class="routerlink"
-                  :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+                  :class="{
+                    'text-light': isHome || isDetail,
+                    'text-dark': !isHome && !isDetail,
+                  }"
                   :to="{ name: 'MovieMapView' }"
                   >주변 영화관</RouterLink
                 >
@@ -145,7 +161,10 @@ const logOut = function () {
               <li class="nav-item">
                 <RouterLink
                   class="routerlink"
-                  :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+                  :class="{
+                    'text-light': isHome || isDetail,
+                    'text-dark': !isHome && !isDetail,
+                  }"
                   :to="{ name: 'MovieRecommendedView' }"
                   >추천 영화</RouterLink
                 >
@@ -170,19 +189,29 @@ const logOut = function () {
               v-if="store.isLogin === false"
               class="d-flex routerlink nav-item"
               :to="{ name: 'SignUpView' }"
-              :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+              :class="{
+                'text-light': isHome || isDetail,
+                'text-dark': !isHome && !isDetail,
+              }"
               >회원가입</RouterLink
             >
             <p
               v-if="store.isLogin === false"
               @click="moveLoginFormModal"
               class="d-flex routerlink nav-item relLog"
-              :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+              :class="{
+                'text-light': isHome || isDetail,
+                'text-dark': !isHome && !isDetail,
+              }"
             >
               로그인
             </p>
 
-            <LoginFormModal v-if="showModal" @close="closeModal" />
+            <LoginFormModal
+              v-if="showModal"
+              @close="closeModal"
+              class="text-dark"
+            />
 
             <RouterLink
               v-if="store.isLogin === true"
@@ -191,14 +220,20 @@ const logOut = function () {
                 name: 'UserPageView',
                 params: { username: store.userName },
               }"
-              :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+              :class="{
+                'text-light': isHome || isDetail,
+                'text-dark': !isHome && !isDetail,
+              }"
               >마이페이지</RouterLink
             >
             <p
               v-if="store.isLogin === true"
               @click="logOut"
               class="d-flex routerlink nav-item relLog"
-              :class="{ 'text-light': isHome, 'text-dark': !isHome }"
+              :class="{
+                'text-light': isHome || isDetail,
+                'text-dark': !isHome && !isDetail,
+              }"
             >
               로그아웃
             </p>
@@ -218,11 +253,19 @@ const logOut = function () {
   font-weight: normal;
   font-style: normal;
 }
-.bg-transparent {
+.bg-transparent.text-light {
   background-color: transparent !important;
   top: 0;
   width: 100%;
   z-index: 10;
+  color: white !important;
+}
+.bg-transparent.text-dark {
+  background-color: transparent !important;
+  top: 0;
+  width: 100%;
+  z-index: 10;
+  color: black !important;
 }
 .navbar-toggler {
   background-color: #fba1b7;
