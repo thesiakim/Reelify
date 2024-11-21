@@ -230,32 +230,38 @@ class MovieFilteringListView(ListAPIView):
 
     def get_queryset(self):
         queryset = Movie.objects.all()
-        filter_conditions = Q()
 
         # 장르 필터링
         genre_ids = self.request.query_params.getlist('genre', None)
+        genre_filter = Q()
         if genre_ids:
             try:
                 genres = Genre.objects.filter(id__in=genre_ids)
                 if not genres.exists():
                     raise NotFound("해당 장르의 영화는 존재하지 않습니다.")
-                filter_conditions |= Q(genres__in=genres)
+                genre_filter = Q(genres__in=genres)
             except Genre.DoesNotExist:
                 raise NotFound("해당 장르의 영화는 존재하지 않습니다.")
 
         # 국가 필터링
         country_ids = self.request.query_params.getlist('country', None)
+        country_filter = Q()
         if country_ids:
             try:
                 countries = Country.objects.filter(id__in=country_ids)
                 if not countries.exists():
                     raise NotFound("해당 국가의 영화는 존재하지 않습니다.")
-                filter_conditions |= Q(countries__in=countries)
+                country_filter = Q(countries__in=countries)
             except Country.DoesNotExist:
                 raise NotFound("해당 국가의 영화는 존재하지 않습니다.")
 
-        # 조건을 기반으로 필터링
-        queryset = queryset.filter(filter_conditions).distinct()
+        # 국가와 장르의 AND 조건 적용
+        if genre_ids and country_ids:
+            queryset = queryset.filter(genre_filter & country_filter)
+        elif genre_ids:
+            queryset = queryset.filter(genre_filter)
+        elif country_ids:
+            queryset = queryset.filter(country_filter)
 
         # 정렬 기준 처리
         sort_option = self.request.query_params.get('sort', 'recent')  # 기본값: 최근 개봉일 순
@@ -271,7 +277,8 @@ class MovieFilteringListView(ListAPIView):
         else:
             raise NotFound("유효하지 않은 정렬 기준입니다.")
 
-        return queryset
+        return queryset.distinct()
+
 
 #-------------------------------------------------------------------------------------------------------------
 
