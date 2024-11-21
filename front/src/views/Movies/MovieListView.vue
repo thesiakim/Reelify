@@ -1,15 +1,14 @@
 <template>
-  <div class="container">
-    <div class="page-title">
+  <div class="container my-3">
+    <div class="page-title mb-5">
       <h1>전체 영화 조회</h1>
     </div>
     <div class="movie-list-container">
-      x
       <!-- 국가, 장르 중복체크 가능 -->
       <div class="select-option-form">
         <!-- 국가 선택 -->
         <div class="select-country">
-          <div>국가 : {{ checkedCountry }}</div>
+          <h4>국가 선택</h4>
 
           <!-- 미국 -->
           <input
@@ -77,78 +76,115 @@
         </div>
         <!-- 장르 선택 -->
         <div class="select-genre">
-          <div>장르 : {{ checkedGenre }}</div>
-
-          <!-- 모험, 판타지, sf, 액션 -->
+          <h4>장르 선택</h4>
+          <!-- 모험, 판타지 -->
           <input
             type="checkbox"
             class="btn-check"
             id="gen1"
-            value="12, 14, 878, 28"
+            value="12, 14"
             @change="handleGenreChange($event)"
           />
-          <label for="gen1" class="btn">모, 판, s, 액</label>
-          <!-- 드라마, 로맨스, 음악 -->
+          <label for="gen1" class="btn">🎇모험, 판타지 🎆</label>
+          <!-- 로맨스-->
           <input
             type="checkbox"
             class="btn-check"
             id="gen2"
-            value="18, 10749, 10402"
+            value="10749"
             @change="handleGenreChange($event)"
           />
-          <label for="gen2" class="btn">드, 로, 음</label>
-          <!-- 애니메이션, TV 영화  -->
+          <label for="gen2" class="btn">💖로맨스💝</label>
           <input
             type="checkbox"
             class="btn-check"
             id="gen3"
-            value="16, 10770"
+            value="18, 35"
             @change="handleGenreChange($event)"
           />
-          <label for="gen3" class="btn">애니, tv</label>
-          <!-- 코미디, 가족 -->
+          <label for="gen3" class="btn">🤗드라마, 코미디🤣</label>
+
+          <!-- 애니메이션, TV 영화  -->
           <input
             type="checkbox"
             class="btn-check"
             id="gen4"
-            value="35, 10751"
+            value="16, 10770"
             @change="handleGenreChange($event)"
           />
-          <label for="gen4" class="btn">코, 가</label>
-          <!-- 역사, 다큐멘터리, 전쟁 -->
+          <label for="gen4" class="btn">🧞‍♂️애니, tv📺</label>
+
+          <!-- 음악, 가족 -->
           <input
             type="checkbox"
             class="btn-check"
             id="gen5"
-            value="36, 99, 10752"
+            value="10402, 10751"
             @change="handleGenreChange($event)"
           />
-          <label for="gen5" class="btn">역, 다, 전</label>
-          <!-- 서부, 스릴러, 범죄, 미스터리 -->
+          <label for="gen5" class="btn">🎵음악, 가족👨‍👩‍👧‍👦</label>
+          <!-- 공포, 스릴러-->
           <input
             type="checkbox"
             class="btn-check"
             id="gen6"
-            value="37, 53, 80, 9648"
+            value="27, 53"
             @change="handleGenreChange($event)"
           />
-          <label for="gen6" class="btn">서부, 스릴러, 범죄, 미스터리</label>
+          <label for="gen6" class="btn">😱공포, 스릴러🧛‍♀️</label>
+          <!-- SF, 미스터리 -->
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="gen7"
+            value="878, 9648"
+            @change="handleGenreChange($event)"
+          />
+          <label for="gen7" class="btn">👨‍🚀SF, 미스터리😲</label>
+
+          <!-- 액션, 범죄 -->
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="gen8"
+            value="28, 80"
+            @change="handleGenreChange($event)"
+          />
+          <label for="gen8" class="btn">🏃‍♀️액션, 범죄👮‍♂️</label>
+          <!-- 역사, 다큐멘터리 -->
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="gen9"
+            value="36, 99"
+            @change="handleGenreChange($event)"
+          />
+          <label for="gen9" class="btn">💫역사, 다큐멘터리📚</label>
+          <!-- 서부, 전쟁 -->
+          <input
+            type="checkbox"
+            class="btn-check"
+            id="gen10"
+            value="37, 10752"
+            @change="handleGenreChange($event)"
+          />
+          <label for="gen10" class="btn">🤠서부, 전쟁🏹</label>
         </div>
         <!-- 정렬 기준 선택 -->
-        <div class="select-criteria">
-          <label for="sort">정렬 기준</label><br />
-          <select v-model="sortOption">
+        <div class="select-criteria d-flex flex-row justify-content-end">
+          <!-- <label for="sort">정렬 기준</label><br /> -->
+          <select class="selectBox mx-2" v-model="sortOption">
             <option value="recent">최신</option>
             <option value="review">리뷰</option>
             <option value="like">좋아요</option>
             <option value="popularity">인기</option>
           </select>
-        </div>
-        <div class="select-movies">
-          <button @click="loadMovies">영화 조회</button>
+          <div class="select-movies">
+            <button class="listBtn mx-2" @click="loadMovies">영화 조회</button>
+          </div>
         </div>
       </div>
-      <div class="row movie-list mt-4">
+      <div class="row movie-list mt-4 d-flex justify-content-center">
         <MovieCard
           v-for="movie in movieList"
           :key="movie.id"
@@ -249,4 +285,33 @@ watch(currentPage, () => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.btn {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.btn:last-child {
+  margin-right: 0;
+}
+.btn-check:checked + label {
+  border-color: #d2de32;
+}
+.listBtn {
+  background-color: #febbcc;
+  border: 2px solid #ffcccc;
+  border-radius: 5px;
+  font-size: 18px;
+}
+.selectBox {
+  border: none;
+  border-radius: 5px;
+
+  width: 12%;
+}
+.selectBox:focus {
+  border: #e6a4b4;
+}
+</style>

@@ -6,7 +6,7 @@ import MovieListView from "@/views/Movies/MovieListView.vue";
 import MovieDetailView from "@/views/Movies/MovieDetailView.vue";
 import MovieSearchView from "@/views/Movies/MovieSearchView.vue";
 import ReviewListView from "@/views/Movies/ReviewListView.vue";
-import ReviewCreateView from "@/views/Movies/ReviewCreateView.vue";
+import ReviewFormView from "@/views/Movies/ReviewFormView.vue";
 import MovieMapView from "@/views/Movies/MovieMapView.vue";
 import MovieRecommendedView from "@/views/Movies/MovieRecommendedView.vue";
 import MovieLegendaryView from "@/views/Movies/MovieLegendaryView.vue";
@@ -55,7 +55,12 @@ const router = createRouter({
     {
       path: "/:movie_id/review-create",
       name: "ReviewCreateView",
-      component: ReviewCreateView,
+      component: ReviewFormView,
+    },
+    {
+      path: "/:movie_id/review-update",
+      name: "ReviewUpdateView",
+      component: ReviewFormView,
     },
     {
       path: "/movie-map",
