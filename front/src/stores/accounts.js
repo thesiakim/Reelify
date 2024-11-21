@@ -68,6 +68,16 @@ export const useAccountStore = defineStore(
       return `${TMDB_URL}${path}`;
     };
 
+    const getBackDrop = (path) => {
+      const TMDB_URL = "https://image.tmdb.org/t/p/w1280";
+      return `${TMDB_URL}${path}`;
+    };
+
+    const getOttPath = (path) => {
+      const TMDB_URL = "https://image.tmdb.org/t/p/w200";
+      return `${TMDB_URL}${path}`;
+    };
+
     // return { signUp, errorMessage, logIn, token, API_URL, getPosterPath, searchResults  };
     return {
       logIn,
@@ -80,6 +90,8 @@ export const useAccountStore = defineStore(
       loginResult,
       logOut,
       userName,
+      getBackDrop,
+      getOttPath,
     };
   },
   { persist: true }
