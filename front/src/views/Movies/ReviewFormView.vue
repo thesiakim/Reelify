@@ -2,12 +2,9 @@
   <div class="review-container">
     <h1 v-if="route.name === 'ReviewCreateView'" class="title">리뷰 작성</h1>
     <h1 v-if="route.name === 'ReviewUpdateView'" class="title">리뷰 수정</h1>
-    <form
-      class="review-form"
-      @submit.prevent="handleSubmit"
-    >
+    <form class="review-form" @submit.prevent="handleSubmit">
       <div class="form-group">
-        <label for="rating" class="label">별점</label>
+        <label for="rating" class="label"></label>
         <div class="stars">
           <span
             v-for="index in 5"
@@ -22,7 +19,11 @@
             ★
           </span>
         </div>
-        <p class="rating-text">선택한 별점: {{ formData.rating }}</p>
+        <!-- 이모지와 텍스트 순서 변경 -->
+        <p class="rating-text">
+          <span class="emoji-display">{{ currentEmoji }}</span>
+          선택한 별점: {{ formData.rating }}
+        </p>
         <span v-if="ratingError" class="error-message">별점을 입력해주세요</span>
       </div>
 
@@ -53,9 +54,8 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import axios from "axios";
 import { useRouter, useRoute } from "vue-router";
 import { useAccountStore } from "@/stores/accounts";
@@ -75,6 +75,16 @@ const formData = ref({
 });
 
 const errorMessage = ref("");
+
+// 별점에 따른 이모지 계산
+const currentEmoji = computed(() => {
+  const rating = formData.value.rating;
+  if (rating <= 1) return "😡";
+  if (rating <= 2) return "🫤";
+  if (rating <= 3) return "🤔";
+  if (rating <= 4) return "🤭";
+  return "🥰";
+});
 
 // 별점 미리보기 업데이트
 const updateHover = (index, event) => {
@@ -104,7 +114,6 @@ const getFillPercentage = (index) => {
 const ratingError = ref(false);
 
 const handleSubmit = async () => {
-  // 별점 유효성 검사
   if (formData.value.rating === 0) {
     ratingError.value = true;
     return;
@@ -118,8 +127,6 @@ const handleSubmit = async () => {
   }
 };
 
-
-// 리뷰 작성 요청
 const createReview = async () => {
   try {
     const response = await axios.post(
@@ -133,15 +140,12 @@ const createReview = async () => {
     );
     console.log("리뷰 작성 성공:", response.data);
   } catch (error) {
-    console.log(error)
     errorMessage.value = error.response?.data?.message || "리뷰 작성 중 오류가 발생했습니다.";
   }
 };
 
-// 기존 리뷰 데이터 저장용 변수
 const reviewDetail = ref(null);
 
-// 기존 리뷰 데이터 조회
 const getReviewDetail = function (reviewId) {
   axios
     .get(`${API_URL}/api/v1/reviews/${reviewId}/detail/`)
@@ -296,5 +300,19 @@ const updateReview = function () {
   font-size: 12px;
   color: red;
   margin-top: 0; /* 기본 여백 제거 */
+}
+
+/* 수정된 이모지와 텍스트 배치 */
+.rating-text {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px; /* 이모지와 텍스트 간 간격 */
+}
+
+.emoji-display {
+  font-size: 20px; /* 이모지 크기 */
 }
 </style>
