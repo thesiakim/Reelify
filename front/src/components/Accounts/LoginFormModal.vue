@@ -25,7 +25,7 @@
             <div class="error-message-container">
               <span v-if="errorMessage" class="error-message">{{ errorMessage }}</span>
             </div>
-            <input type="submit" value="로그인" class="submit-btn" />
+            <input type="submit" value="확인" class="submit-btn" />
           </form>
         </div>
       </div>
