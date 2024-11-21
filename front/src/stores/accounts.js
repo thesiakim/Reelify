@@ -69,7 +69,7 @@ export const useAccountStore = defineStore(
     };
 
     const getBackDrop = (path) => {
-      const TMDB_URL = "https://image.tmdb.org/t/p/w1280";
+      const TMDB_URL = "https://image.tmdb.org/t/p/original";
       return `${TMDB_URL}${path}`;
     };
 
