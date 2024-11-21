@@ -58,7 +58,7 @@ const router = createRouter({
       component: ReviewFormView,
     },
     {
-      path: "/:movie_id/review-update",
+      path: "/:review_id/review-update",
       name: "ReviewUpdateView",
       component: ReviewFormView,
     },
