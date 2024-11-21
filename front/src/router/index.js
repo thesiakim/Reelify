@@ -6,13 +6,13 @@ import MovieListView from "@/views/Movies/MovieListView.vue";
 import MovieDetailView from "@/views/Movies/MovieDetailView.vue";
 import MovieSearchView from "@/views/Movies/MovieSearchView.vue";
 import ReviewListView from "@/views/Movies/ReviewListView.vue";
-import ReviewCreateView from "@/views/Movies/ReviewCreateView.vue";
 import MovieMapView from "@/views/Movies/MovieMapView.vue";
 import MovieRecommendedView from "@/views/Movies/MovieRecommendedView.vue";
 import MovieLegendaryView from "@/views/Movies/MovieLegendaryView.vue";
 import UserPageView from "@/views/Community/UserPageView.vue";
 import UserReviewListView from "@/views/Community/UserReviewListView.vue";
 import UserFollowView from "@/views/Community/UserFollowView.vue";
+import ReviewFormView from "@/views/Movies/ReviewFormView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -54,8 +54,8 @@ const router = createRouter({
     },
     {
       path: "/:movie_id/review-create",
-      name: "ReviewCreateView",
-      component: ReviewCreateView,
+      name: "ReviewFormView",
+      component: ReviewFormView,
     },
     {
       path: "/movie-map",
