@@ -346,6 +346,13 @@ def movie_detail(request, movie_pk):
 - 리뷰가 없는 영화인 경우 빈 배열 [] 반환
 - 특정 영화에 대한 리뷰 목록, 각 리뷰에 대한 세부 정보(id, 작성자, 내용, 별점, 스포일러 여부, 추천수, 작성일),
 '''
+from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
+from django.shortcuts import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
+from .models import Movie, Review
+from .serializers import ReviewListSerializer
+
 class ReviewListView(ListAPIView):
     serializer_class = ReviewListSerializer
     pagination_class = PageNumberPagination
@@ -354,6 +361,28 @@ class ReviewListView(ListAPIView):
         movie_id = self.kwargs.get('movie_pk')
         movie = get_object_or_404(Movie, pk=movie_id)
         return Review.objects.filter(movie=movie).order_by('-created_at')
+
+    def get(self, request, *args, **kwargs):
+        movie_id = self.kwargs.get('movie_pk')
+        movie = get_object_or_404(Movie, pk=movie_id)
+
+        # 리뷰 데이터 가져오기
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            paginated_response = self.get_paginated_response(serializer.data)
+            return Response({
+                "movie_title": movie.title,
+                "reviews": paginated_response.data
+            })
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "movie_title": movie.title,
+            "reviews": serializer.data
+        })
+
 
 #-------------------------------------------------------------------------------------------------------------
 
