@@ -139,6 +139,7 @@ const createReview = async () => {
       }
     );
     console.log("리뷰 작성 성공:", response.data);
+    router.push({ name: 'MovieDetailView', params: {movie_id: movieId}})
   } catch (error) {
     errorMessage.value = error.response?.data?.message || "리뷰 작성 중 오류가 발생했습니다.";
   }
