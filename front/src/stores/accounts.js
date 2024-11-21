@@ -14,28 +14,25 @@ export const useAccountStore = defineStore(
     // 회원 관련 ===============================================================================================
 
     const loginResult = ref(null);
+
     // 로그인
-    const logIn = function (payload) {
+    const logIn = async function (payload) {
       const { username, password } = payload;
 
-      axios({
-        method: "post",
-        url: `${API_URL}/accounts/login/`,
-        data: {
+      try {
+        const res = await axios.post(`${API_URL}/accounts/login/`, {
           username,
           password,
-        },
-      })
-        .then((res) => {
-          console.log("로그인이 완료되었습니다");
-          token.value = res.data.key;
-          loginResult.value = true;
-          userName.value = username;
-          console.log(userName.value);
-        })
-        .catch((err) => {
-          console.log(err);
         });
+        console.log("로그인이 완료되었습니다");
+        token.value = res.data.key;
+        loginResult.value = true;
+        userName.value = username;
+        console.log(userName.value);
+      } catch (err) {
+        console.log(err);
+        loginResult.value = false; // 로그인 실패 상태 설정
+      }
     };
 
     // 인증 상태 여부

@@ -60,6 +60,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     top_reviews = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
+    has_more_reviews = serializers.SerializerMethodField()  
 
     class Meta:
         model = Movie
@@ -81,6 +82,11 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     # 해당 영화를 추천한 유저 수 반환
     def get_likes_count(self, obj):
         return obj.likes.count()
+    
+    # 화면에 리뷰 렌더링 시 더보기 버튼 필요 여부 확인
+    def get_has_more_reviews(self, obj):
+        review_count = obj.review_set.count()
+        return review_count >= 6
 
 # -------------------------------------------------------------------------------------------------------
 
