@@ -102,12 +102,12 @@ class ReviewListSerializer(serializers.ModelSerializer):
     def get_likes_count(self, obj):
         return obj.likes.count()
 
-# # 단일 리뷰
-# class ReviewSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Review
-#         fields = ('rating', 'content', 'is_spoiler',)
-#         read_only_fields = ('id', 'user', 'created_at', 'updated_at', 'likes',)   
+# 단일 리뷰
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ('rating', 'content', 'is_spoiler',)
+        read_only_fields = ('id', 'user', 'created_at', 'updated_at', 'likes',)   
 
 
 # 리뷰에 대한 댓글, 댓글에 대한 대댓글

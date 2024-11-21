@@ -16,7 +16,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework import status
 
 from movies.models import Movie, Country, Genre, Review, Comment
-from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer
+from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer
 
 
 import re
@@ -437,7 +437,7 @@ def review(request, review_pk):
         else:
             return Response(
                 {
-                    "message": "리뷰 수정에 실패했습니다. 다시 확인해주세요.",
+                    "message": "별점을 지정해주세요!",
                     "details": serializer.errors
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -447,13 +447,14 @@ def review(request, review_pk):
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# 단일 리뷰 조회 : 필요 없을 수도 있기 때문에 추후 삭제 가능성 있음 
+# 단일 리뷰 조회 
 @api_view(['GET'])
 def review_detail(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
-    serializer = ReviewListSerializer(review)
+    serializer = ReviewSerializer(review)
     return Response(serializer.data)
 
+# 리뷰 추천, 추천 취소
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def review_like_toggle(request, review_pk):
