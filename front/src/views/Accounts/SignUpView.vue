@@ -75,8 +75,10 @@
 import { ref, onMounted, watch } from "vue";
 import axios from "axios";
 import { useAccountStore } from "@/stores/accounts";
+import { useRouter } from "vue-router";
 
 const store = useAccountStore();
+const router = useRouter()
 
 const username = ref(null);
 const password1 = ref(null);
@@ -135,6 +137,7 @@ const signUp = () => {
       console.log("회원가입 성공");
       const password = password1.value;
       store.logIn({ username: username.value, password }); // 자동 로그인
+      router.push({ name: 'HomeView'})
     })
     .catch((err) => {
       if (err.response && err.response.data) {
