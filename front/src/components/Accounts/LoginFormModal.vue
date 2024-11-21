@@ -1,5 +1,3 @@
-// LoginFormModal.vue
-
 <template>
   <div>
     <div class="modal-overlay" @click.self="closeModal">
