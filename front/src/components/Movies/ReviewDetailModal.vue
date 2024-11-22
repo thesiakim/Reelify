@@ -9,14 +9,21 @@
           type="text"
           v-model.trim="newComment"
           placeholder="댓글을 입력하세요"
+          @keyup.enter="addComment"
         />
         <button @click="addComment">작성</button>
       </div>
 
+      <!-- 댓글 목록 -->
       <div class="comments-container">
         <h4>댓글 목록</h4>
         <div v-if="comments.length > 0">
-          <div v-for="comment in comments" :key="comment.id" class="comment">
+          <div
+            v-for="(comment, index) in comments"
+            :key="comment.id"
+            class="comment"
+            :ref="index === comments.length - 1 ? setLastCommentRef : null"
+          >
             <div class="comment-header">
               <img
                 :src="comment.user.profile_img"
@@ -28,13 +35,22 @@
             </div>
             <p class="comment-content">{{ comment.content }}</p>
 
-            <!-- 대댓글 입력 버튼 -->
-            <div class="reply-btn">
-              <img
-                @click="toggleReplyInput(comment.id)"
-                src="@/assets/reply-icon.png"
-                alt="reply-icon.png"
-              />
+            <!-- 댓글, 대댓글 액션 버튼 -->
+            <div class="comment-actions">
+              <div class="reply-btn">
+                <img
+                  @click="toggleReplyInput(comment.id)"
+                  src="@/assets/reply-icon.png"
+                  alt="reply-icon.png"
+                />
+              </div>
+              <button
+                v-if="store.userName === comment.user.username"
+                class="delete-btn"
+                @click="deleteComment(comment.id)"
+              >
+                삭제
+              </button>
             </div>
 
             <!-- 대댓글 입력칸 -->
@@ -43,12 +59,16 @@
                 type="text"
                 v-model.trim="replyContent"
                 placeholder="대댓글을 입력하세요"
+                @keyup.enter="addReply(comment.id)"
               />
               <button @click="addReply(comment.id)">작성</button>
             </div>
 
             <!-- 대댓글 -->
-            <div v-if="Array.isArray(comment.replies) && comment.replies.length > 0" class="replies">
+            <div
+              v-if="Array.isArray(comment.replies) && comment.replies.length > 0"
+              class="replies"
+            >
               <div
                 v-for="reply in comment.replies"
                 :key="reply.id"
@@ -64,6 +84,13 @@
                   <span class="created-at">{{ formatDate(reply.created_at) }}</span>
                 </div>
                 <p class="comment-content">{{ reply.content }}</p>
+                <button
+                  v-if="store.userName === reply.user.username"
+                  class="delete-btn"
+                  @click="deleteComment(reply.id)"
+                >
+                  삭제
+                </button>
               </div>
             </div>
           </div>
@@ -78,7 +105,7 @@
 
 <script setup>
 import axios from "axios";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { useAccountStore } from "@/stores/accounts";
 
 const props = defineProps({
@@ -94,11 +121,17 @@ const closeModal = () => {
   emit("close");
 };
 
-// 댓글 데이터
-const comments = ref([]); // 항상 빈 배열로 초기화
-const newComment = ref(""); // 새 댓글 내용
-const replyContent = ref(""); // 대댓글 내용
-const showReplyInput = ref(null); // 대댓글 입력창 상태
+// 상태 관리
+const comments = ref([]);
+const newComment = ref("");
+const replyContent = ref("");
+const showReplyInput = ref(null);
+
+const page = ref(1);
+const hasMore = ref(true);
+const isLoading = ref(false);
+
+const observer = ref(null);
 
 const store = useAccountStore();
 const API_URL = store.API_URL;
@@ -111,14 +144,39 @@ const formatDate = (dateStr) => {
 
 // 댓글 목록 가져오기
 const loadComments = async () => {
+  if (!hasMore.value || isLoading.value) return; // 중복 호출 방지
+  isLoading.value = true;
+
   try {
     const response = await axios.get(
-      `${API_URL}/api/v1/movies/reviews/${props.reviewId}/comments/`
+      `${API_URL}/api/v1/movies/reviews/${props.reviewId}/comments/`,
+      { params: { page: page.value } }
     );
-    comments.value = response.data.results;
+
+    if (response.data.results && response.data.results.length > 0) {
+      comments.value.push(...response.data.results); // 댓글 추가
+      page.value += 1;
+    } else {
+      hasMore.value = false; // 추가 댓글 없음
+    }
   } catch (error) {
-    console.error("댓글 목록을 불러오는 중 오류가 발생했습니다.", error);
+    console.error("댓글 로드 오류:", error);
+  } finally {
+    isLoading.value = false;
   }
+};
+
+// IntersectionObserver 설정
+const setLastCommentRef = (el) => {
+  if (observer.value) observer.value.disconnect();
+
+  observer.value = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && hasMore.value && !isLoading.value) {
+      loadComments(); // 마지막 요소가 보이면 호출
+    }
+  });
+
+  if (el) observer.value.observe(el);
 };
 
 // 댓글 추가
@@ -127,18 +185,13 @@ const addComment = async () => {
     const response = await axios.post(
       `${API_URL}/api/v1/reviews/${props.reviewId}/comments/`,
       { content: newComment.value },
-      { headers: { Authorization: `Token ${token}` } }
+      { headers: { Authorization: `Token ${store.token}` } }
     );
-    comments.value.unshift(response.data); // 새로운 댓글을 목록의 맨 앞에 추가
-    newComment.value = ""; // 입력창 초기화
+    comments.value.unshift(response.data);
+    newComment.value = "";
   } catch (error) {
-    console.error("댓글 작성 시 오류:", error);
+    console.error("댓글 추가 오류:", error);
   }
-};
-
-// 대댓글 입력창 토글
-const toggleReplyInput = (commentId) => {
-  showReplyInput.value = showReplyInput.value === commentId ? null : commentId;
 };
 
 // 대댓글 추가
@@ -147,24 +200,61 @@ const addReply = async (commentId) => {
     const response = await axios.post(
       `${API_URL}/api/v1/comments/${commentId}/replies/`,
       { content: replyContent.value },
-      { headers: { Authorization: `Token ${token}` } }
+      { headers: { Authorization: `Token ${store.token}` } }
     );
     const commentIndex = comments.value.findIndex((c) => c.id === commentId);
     if (commentIndex !== -1) {
-      if (!Array.isArray(comments.value[commentIndex].replies)) {
-        comments.value[commentIndex].replies = []; // replies를 빈 배열로 초기화
+      if (!comments.value[commentIndex].replies) {
+        comments.value[commentIndex].replies = [];
       }
-      comments.value[commentIndex].replies.push(response.data); // 대댓글 추가
+      comments.value[commentIndex].replies.push(response.data);
     }
-    replyContent.value = ""; // 대댓글 입력창 초기화
-    showReplyInput.value = null; // 입력창 닫기
+    replyContent.value = "";
+    showReplyInput.value = null;
   } catch (error) {
-    console.error("대댓글 작성 시 오류:", error);
+    console.error("대댓글 추가 오류:", error);
   }
 };
 
-// 모달이 열릴 때 댓글 목록 불러오기
-onMounted(() => {
+// 대댓글 입력창 토글
+const toggleReplyInput = (commentId) => {
+  showReplyInput.value = showReplyInput.value === commentId ? null : commentId;
+};
+
+// 댓글, 대댓글 삭제
+const deleteComment = (id) => {
+  axios({
+    method: "delete",
+    url: `${store.API_URL}/api/v1/comments/${id}/`,
+    headers: {
+      Authorization: `Token ${token}`,
+    },
+  })
+    .then(() => {
+      console.log("댓글 삭제 완료");
+      const commentIndex = comments.value.findIndex((comment) => comment.id === id);
+
+      if (commentIndex !== -1) {
+        comments.value.splice(commentIndex, 1);
+        return;
+      }
+
+      comments.value.forEach((comment) => {
+        if (Array.isArray(comment.replies)) {
+          const replyIndex = comment.replies.findIndex((reply) => reply.id === id);
+          if (replyIndex !== -1) {
+            comment.replies.splice(replyIndex, 1);
+          }
+        }
+      });
+    })
+    .catch((error) => {
+      console.error(`댓글 삭제 중 에러 발생: ${error}`);
+    });
+};
+
+onMounted(async () => {
+  await nextTick();
   loadComments();
 });
 </script>
@@ -187,13 +277,15 @@ onMounted(() => {
   position: relative;
   background-color: white;
   padding: 20px;
-  border-radius: 10px;
+  border-radius: 20px;
   width: 50%;
   max-width: 600px;
   max-height: 80vh;
   overflow-y: auto;
   text-align: left;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  scrollbar-width: thin; /* Firefox용 */
+  scrollbar-color: #fba1b7 white; /* Firefox용 */
 }
 
 .close-btn {
@@ -236,16 +328,31 @@ onMounted(() => {
   gap: 10px;
 }
 
-.profile-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid #ccc;
+.comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .reply-btn {
-  text-align: right;
+  display: flex;
+  align-items: center;
+}
+
+.delete-btn {
+  background: #fba1b7;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #e08fa5;
 }
 
 .reply-input {
