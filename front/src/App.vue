@@ -72,14 +72,14 @@ const fetchAutocomplete = debounce(() => {
     params: { query: query.value },
   })
     .then((response) => {
-      console.log("API 응답 데이터:", response.data); // 응답 데이터를 콘솔로 확인
-      autocompleteResults.value = response.data; // 결과를 그대로 저장
-      console.log("드롭다운 데이터:", autocompleteResults.value); // 드롭다운 데이터 확인
+      console.log("API 응답 데이터:", response.data); 
+      autocompleteResults.value = response.data; 
+      console.log("드롭다운 데이터:", autocompleteResults.value); 
     })
     .catch((error) => {
       console.error("자동완성 API 호출 중 오류:", error);
     });
-}, 200);
+}, 200);  // 디바운스 적용
 
 const handleInput = (event) => {
   query.value = event.target.value;
