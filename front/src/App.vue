@@ -1,8 +1,7 @@
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
 import LoginFormModal from "./components/Accounts/LoginFormModal.vue";
 import { ref, computed, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, RouterLink, RouterView } from "vue-router";
 import axios from "axios";
 import { useAccountStore } from "./stores/accounts";
 

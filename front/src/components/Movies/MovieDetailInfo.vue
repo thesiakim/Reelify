@@ -157,11 +157,14 @@ const videosList = ref([]);
 const router = useRouter();
 
 const goToReviewForm = () => {
-  router.push({ name: "ReviewCreateView", params: { movie_id: movieId } });
+  router.push({
+    name: "ReviewCreateView",
+    params: { movie_id: movieId.value },
+  });
 };
 
 const goToReviewList = () => {
-  router.push({ name: "ReviewListView", params: { movieId: movieId } });
+  router.push({ name: "ReviewListView", params: { movieId: movieId.value } });
 };
 
 watch(

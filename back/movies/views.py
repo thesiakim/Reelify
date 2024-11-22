@@ -567,8 +567,8 @@ def update_profile_image(request):
 
 # 유저 페이지 
 @api_view(['GET'])
-def user_page(request, pk):
-    user = get_object_or_404(User, pk=pk)
+def user_page(request, username):
+    user = get_object_or_404(User, username=username)
     serializer = MyPageSerializer(user)
     return Response(serializer.data)
 

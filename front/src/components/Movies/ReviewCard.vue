@@ -3,7 +3,12 @@
     <div class="card-body">
       <!-- 왼쪽: 프로필 사진 및 유저 이름 -->
       <div class="user-section">
-        <img :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
+        <img
+          @click="goToUserPage(review.user.username)"
+          :src="review.user.profile_img"
+          alt="프로필 이미지"
+          class="user-profile-img"
+        />
         <p class="user-username">{{ review.user.username }}</p>
       </div>
 
@@ -28,10 +33,14 @@
 
         <div class="review-stats">
           <p class="review-rating">⭐ {{ review.rating.toFixed(1) }}</p>
-          <p class="review-likes" @click="reviewLike">👍 {{ review.likes_count }}</p>
+          <p class="review-likes" @click="reviewLike">
+            👍 {{ review.likes_count }}
+          </p>
         </div>
         <div class="review-footer">
-          <p class="review-date">🕒 {{ new Date(review.created_at).toLocaleString() }}</p>
+          <p class="review-date">
+            🕒 {{ new Date(review.created_at).toLocaleString() }}
+          </p>
           <a href="#" class="btn btn-primary review-btn">댓글 보기</a>
         </div>
       </div>
@@ -41,6 +50,9 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 defineProps({
   review: Object,
@@ -60,6 +72,10 @@ const reviewLike = () => {
   // 좋아요 처리 로직 작성
 };
 
+// 유저 페이지 이동 함수
+const goToUserPage = function (username) {
+  router.push({ name: "UserPageView", params: { username: username } });
+};
 </script>
 
 <style scoped>
@@ -96,6 +112,7 @@ const reviewLike = () => {
   object-fit: cover;
   border: 1px solid #ddd;
   margin-bottom: 10px;
+  cursor: pointer;
 }
 
 .user-username {
@@ -114,7 +131,6 @@ const reviewLike = () => {
   position: relative;
 }
 
-
 /* 블러 처리 및 경고 메시지 */
 .card-text-wrapper.blurred .card-text {
   filter: blur(5px); /* 부드러운 블러 효과 */
@@ -128,7 +144,12 @@ const reviewLike = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.6); /* 밝은 회색과 흰색 사이의 반투명 효과 */
+  background: rgba(
+    255,
+    255,
+    255,
+    0.6
+  ); /* 밝은 회색과 흰색 사이의 반투명 효과 */
   border-radius: 10px; /* 둥근 모서리 */
   color: red; /* 텍스트를 빨간색으로 설정 */
   display: flex;
@@ -139,7 +160,6 @@ const reviewLike = () => {
   padding: 10px;
   cursor: pointer;
 }
-
 
 /* 리뷰 하단 섹션 */
 .review-footer {
