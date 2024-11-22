@@ -613,3 +613,10 @@ def is_follow(request, username):
     target_user = get_object_or_404(User, username=username)
     is_following = request.user.followings.filter(id=target_user.id).exists()
     return Response({ "is_following": is_following })
+
+# 회원 탈퇴
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete(request):
+    request.user.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
