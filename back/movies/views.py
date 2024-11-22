@@ -336,7 +336,7 @@ class MovieSearchListView(ListAPIView):
 @api_view(['GET'])
 def movie_detail(request, movie_pk):
     movie = get_object_or_404(Movie, pk=movie_pk)
-    serializer = MovieDetailSerializer(movie)
+    serializer = MovieDetailSerializer(movie, context={'request': request})
     return Response(serializer.data)
 
 #-------------------------------------------------------------------------------------------------------------

@@ -59,9 +59,6 @@
     </div>
     <!-- MovieDetail -->
     <MovieDetailInfo :movieData="movieData" />
-    <br /><br />
-    <!-- Reelify 로고랑 겹쳐서 클릭이 안 됨..아래로 내리느라 br 태그 사용 css 작업 시 지우면 됨 -->
-    <button @click="goToReviewForm">리뷰 작성하기</button>
   </div>
 </template>
 
@@ -111,13 +108,6 @@ onMounted(() => {
       console.log(err);
     });
 });
-
-const goToReviewForm = () => {
-  console.log(movieId);
-  router.push({
-    name: "ReviewCreateView",
-  });
-};
 </script>
 
 <style scoped>
