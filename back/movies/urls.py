@@ -21,6 +21,6 @@ urlpatterns = [
     path('movies', MovieFilteringListView.as_view()),                                   # 장르별, 국가별 영화 필터링
 
     path('profile-image/', views.update_profile_image),                                 # 회원 이미지 변경 
-    path('user-page/<int:pk>/', views.user_page),                                       # 회원 페이지 
+    path('user-page/<str:username>/', views.user_page),                                 # 회원 페이지 
     path('user/<str:username>/follow/', views.toggle_follow),                           # 팔로우, 언팔로우
 ]
