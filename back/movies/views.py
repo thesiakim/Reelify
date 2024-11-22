@@ -606,3 +606,10 @@ def is_liked(request, movie_pk):
     except Movie.DoesNotExist:
         return Response({"message": "존재하지 않는 영화입니다."}, status=status.HTTP_404_NOT_FOUND)
 
+# 팔로우 여부 확인
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def is_follow(request, username):
+    target_user = get_object_or_404(User, username=username)
+    is_following = request.user.followings.filter(id=target_user.id).exists()
+    return Response({ "is_following": is_following })
