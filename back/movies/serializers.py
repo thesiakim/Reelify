@@ -77,7 +77,9 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         top_reviews = obj.review_set.annotate(
             likes_count=Count('likes')
         ).order_by('-likes_count', '-created_at')[:5]
-        return ReviewSerializer(top_reviews, many=True).data
+        return ReviewListSerializer(
+            top_reviews, many=True, context=self.context  
+        ).data
     
     # 해당 영화를 추천한 유저 수 반환
     def get_likes_count(self, obj):
@@ -91,14 +93,21 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 # -------------------------------------------------------------------------------------------------------
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_img = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'profile_img',)
+        fields = ('id', 'username', 'profile_img')
 
+    def get_profile_img(self, obj):
+        request = self.context.get('request')
+        if request and obj.profile_img:
+            return request.build_absolute_uri(obj.profile_img.url)
+        return None
 
 # 리뷰 목록 
 class ReviewListSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user = UserSerializer(read_only=True, context=None)  
     likes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -128,7 +137,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     def get_replies(self, obj):
         replies = obj.replies.all()  # related_name='replies'로 연결된 대댓글
-        return CommentListSerializer(replies, many=True).data
+        return CommentListSerializer(replies, many=True, context=self.context).data
 
     def get_likes_count(self, obj):
         return obj.likes.count()
