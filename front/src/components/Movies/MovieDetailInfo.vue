@@ -15,7 +15,7 @@
           <!-- 영화 추천 -->
           <div class="like-container" @click="likeMovie">
             <div class="like-heart">
-              <span class="like-text">{{ isMovieLiked ? '🖤' : '💗' }}</span>
+              <span class="like-text">{{ isMovieLiked ? '💗' : '🖤' }}</span>
             </div>
             <div class="like-message">
               총 <span class="likes-count">{{ likes_count }}</span>명이 추천했어요!
@@ -104,32 +104,42 @@
       <div>
         <hr />
         <h2>관련 영상</h2>
-        <div class="swiper-container">
-          <div class="custom-prev" @click="goToPrevSlide">◀</div>
-          <div class="custom-next" @click="goToNextSlide">▶</div>
+        <div v-if="movieData && movieData.videos && movieData.videos.length > 2" class="swiper-container" >
           <swiper
-            :slides-per-view="3"
-            space-between="10"
-            :navigation="{
-              nextEl: `.custom-prev`,
-              prevEl: `.custom-next`,
-            }"
+            :slides-per-view="2"
+            :space-between="40"
+            :scrollbar="{ draggable: true }"
             class="thumbnail-swiper"
           >
             <swiper-slide
-              v-for="(video, index) in movieData.videos"
+            v-for="(video, index) in movieData.videos"
               :key="video.id"
               class="thumbnail"
               @click="openModal(video.key)"
             >
               <img
+                class="thumbnail-img"
                 :src="`https://img.youtube.com/vi/${video.key}/0.jpg`"
                 :alt="`Thumbnail ${index + 1}`"
               />
             </swiper-slide>
           </swiper>
-          <!-- </div> -->
 
+
+          <MovieRelatedVideo
+            v-if="isModalOpen"
+            :isOpen="isModalOpen"
+            @close="closeModal"
+            :activeVideoUrl="activeVideoUrl"
+          />
+        </div>
+        <div v-else-if="movieData && movieData.videos && movieData.videos.length <= 2" class="notmany my-4 d-flex justify-content-center">
+          <img v-for="(video, index) in movieData.videos"
+              :key="video.id"
+              @click="openModal(video.key)"
+              class="thumbnail-img2 mx-3" 
+              :src="`https://img.youtube.com/vi/${video.key}/0.jpg`" 
+              :alt="`Thumbnail ${index + 1}`"/>
           <MovieRelatedVideo
             v-if="isModalOpen"
             :isOpen="isModalOpen"
@@ -154,7 +164,8 @@ import { useAccountStore } from "@/stores/accounts";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation } from "swiper/modules";
+import "swiper/css"
+import "swiper/css/scrollbar"
 import "swiper/swiper-bundle.css";
 
 import ReviewCard from "./ReviewCard.vue";
@@ -195,29 +206,6 @@ watch(
     }
   }
 );
-const swiperRef = ref(null);
-// 슬라이드 이동 함수
-const goToNextSlide = () => {
-  if (swiperRef.value) {
-    swiperRef.value.swiper.slideNext();
-  }
-};
-const goToPrevSlide = () => {
-  if (swiperRef.value) {
-    swiperRef.value.swiper.slidePrev();
-  }
-};
-
-onMounted(() => {
-  // Ensure the swiper is initialized after the DOM is rendered
-  if (swiperRef.value) {
-    swiperRef.value.swiper.params.navigation = {
-      nextEl: ".custom-next",
-      prevEl: ".custom-prev",
-    };
-    swiperRef.value.swiper.update();
-  }
-});
 
 const isModalOpen = ref(false);
 const activeVideoUrl = ref("");
@@ -390,79 +378,34 @@ onMounted(() => {
 } */
 
 .thumbnail {
-  width: 300px;
-  height: 200px;
+  height: 268px;
   cursor: pointer;
-}
 
-.thumbnail img {
+}
+.notmany {
+  height: 268px;
+
+}
+.thumbnail-img {
   width: 100%;
   height: 100%;
   object-fit: none;
   border-radius: 8px;
 }
-/* ::v-deep .swiper-button-next::after,
-::v-deep .swiper-button-prev::after {
-  content: "";
-  font-size: 18px;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 10px;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+.thumbnail-img2 {
+  height: 100%;
+  width: 480px;
+  object-fit: none;
+  border-radius: 8px;
   cursor: pointer;
-  aspect-ratio: 1/1;
 }
 
-::v-deep .swiper-button-next::after {
-  content: "▶"; 
-}
-
-::v-deep .swiper-button-prev::after {
-  content: "◀"; 
-} */
-.swiper-button-next:hover,
-.swiper-button-prev:hover {
-  background-color: rgba(0, 0, 0, 0.8);
-}
 /* Swiper 컨테이너 기본 설정 */
 .swiper-container {
   position: relative;
-  width: 100%;
-
+  width: 83%;
+  margin-left: 100px;
   margin-top: 30px;
-}
-
-/* 커스텀 네비게이션 버튼 스타일 */
-.custom-prev,
-.custom-next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.custom-prev {
-  left: -50px; /* 컨테이너 왼쪽 바깥으로 */
-}
-
-.custom-next {
-  right: -50px; /* 컨테이너 오른쪽 바깥으로 */
-}
-
-.custom-prev:hover,
-.custom-next:hover {
-  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .like-container {
@@ -506,6 +449,29 @@ onMounted(() => {
 
 .likes-count {
   font-weight: bold;
+}
+/* 스크롤바 스타일 */
+/* swiper 기본 스타일과 스크롤바 스타일 추가 */
+@import 'swiper/css';
+@import 'swiper/css/scrollbar';  /* 스크롤바 스타일 */
+
+.swiper-scrollbar {
+  height: 6px;               /* 스크롤바 높이 */
+  background: #eb6bcf !important;       /* 스크롤바 배경색 */
+  border-radius: 3px;        /* 스크롤바 둥글게 */
+  margin-top: 10px;          /* 스크롤바 위치 조정 */
+}
+
+.swiper-scrollbar-drag {
+  background: #007bff;       /* 스크롤바 드래그 색상 */
+  border-radius: 3px;        /* 드래그 핸들 둥글게 */
+  width: 20px;
+  height: 100%;
+}
+
+.swiper-scrollbar-drag.swiper-scrollbar-drag-moving {
+  background: #0056b3;       /* 드래그 버튼을 끌 때 색상 변경 */
+  transform: scale(1.2);      /* 드래그 버튼 확대 효과 */
 }
 
 </style>

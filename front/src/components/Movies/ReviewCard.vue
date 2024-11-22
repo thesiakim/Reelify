@@ -3,7 +3,7 @@
     <div class="card-body">
       <!-- 왼쪽: 프로필 사진 및 유저 이름 -->
       <div class="user-section">
-        <img :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
+        <img @click="goToUserPage(review.user.username)" :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
         <p class="user-username">{{ review.user.username }}</p>
       </div>
 
@@ -55,6 +55,9 @@ import axios from "axios";
 import { useAccountStore } from "@/stores/accounts";
 import CustomAlertModal from "../CustomAlertModal.vue";
 import ReviewDetailModal from "./ReviewDetailModal.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter()
 
 const props = defineProps({
   review: Object, // 리뷰 데이터
@@ -123,6 +126,11 @@ const closeReviewDetail = () => {
 const closeAlert = () => {
   showAlert.value = false;
 };
+
+// 유저 페이지 이동 함수
+const goToUserPage = function (username) {
+  router.push({ name: "UserPageView", params: { username: username } });
+};
 </script>
 
 
@@ -159,6 +167,7 @@ const closeAlert = () => {
   object-fit: cover;
   border: 1px solid #ddd;
   margin-bottom: 10px;
+  cursor: pointer;
 }
 
 .user-username {

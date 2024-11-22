@@ -50,7 +50,7 @@ const closeModal = () => {
   border-radius: 10px;
   position: relative;
   width: 80vw;
-  height: 75vh;
+  height: 90vh;
   text-align: center;
   position: relative;
   display: flex;
