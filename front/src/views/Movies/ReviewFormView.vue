@@ -64,7 +64,9 @@ const router = useRouter();
 const route = useRoute();
 const store = useAccountStore();
 
-const movieId = route.params.movie_id;
+const movieIdCreate = ref(null)
+const movieIdUpdate = ref(null)
+
 const token = store.token;
 const API_URL = store.API_URL;
 
@@ -128,9 +130,10 @@ const handleSubmit = async () => {
 };
 
 const createReview = async () => {
+  movieIdCreate.value = route.params.movie_id
   try {
     const response = await axios.post(
-      `${API_URL}/api/v1/movies/${movieId}/create-review/`,
+      `${API_URL}/api/v1/movies/${movieIdCreate.value}/create-review/`,
       formData.value,
       {
         headers: {
@@ -139,9 +142,10 @@ const createReview = async () => {
       }
     );
     console.log("리뷰 작성 성공:", response.data);
-    router.push({ name: 'MovieDetailView', params: {movie_id: movieId}})
+    router.push({ name: 'MovieDetailView', params: {movie_id: movieIdCreate.value}})
   } catch (error) {
     errorMessage.value = error.response?.data?.message || "리뷰 작성 중 오류가 발생했습니다.";
+    console.log()
   }
 };
 
@@ -152,6 +156,9 @@ const getReviewDetail = function (reviewId) {
     .get(`${API_URL}/api/v1/reviews/${reviewId}/detail/`)
     .then((response) => {
       reviewDetail.value = response.data;
+      console.log(response.data.movie.id)
+      movieIdUpdate.value = response.data.movie.id
+      console.log(reviewDetail.value)
     })
     .catch(() => {
       console.log("리뷰 수정 시 기존 데이터 불러오는 API 에러 발생");
@@ -179,8 +186,9 @@ const updateReview = function () {
         Authorization: `Token ${token}`,
       },
     })
-    .then(() => {
+    .then((response) => {
       console.log("리뷰 수정 성공");
+      router.push({ name:'MovieDetailView', params: { movie_id: movieIdUpdate.value }})
     })
     .catch((error) => {
       console.error("리뷰 수정 중 오류:", error);

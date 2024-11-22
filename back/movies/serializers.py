@@ -119,9 +119,15 @@ class ReviewListSerializer(serializers.ModelSerializer):
 
 # 단일 리뷰
 class ReviewSerializer(serializers.ModelSerializer):
+    class MovieIdSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Movie
+            fields = ('id',)
+
+    movie = MovieIdSerializer(read_only=True)
     class Meta:
         model = Review
-        fields = ('rating', 'content', 'is_spoiler',)
+        fields = ('rating', 'content', 'is_spoiler', 'movie',)
         read_only_fields = ('id', 'user', 'created_at', 'updated_at', 'likes',)   
 
 

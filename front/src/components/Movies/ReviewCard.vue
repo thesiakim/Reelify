@@ -33,6 +33,8 @@
         <div class="review-footer">
           <p class="review-date">🕒 {{ new Date(review.created_at).toLocaleString() }}</p>
           <button class="btn btn-primary review-btn" @click="openReviewDetail">댓글 보기</button>
+          <button v-if="store.userName === review.user.username" class="btn btn-primary review-btn" @click="updateReview">수정</button>
+          <button v-if="store.userName === review.user.username" class="btn btn-primary review-btn" @click="deleteReview">삭제</button>
         </div>
       </div>
     </div>
@@ -55,7 +57,9 @@ import axios from "axios";
 import { useAccountStore } from "@/stores/accounts";
 import CustomAlertModal from "../CustomAlertModal.vue";
 import ReviewDetailModal from "./ReviewDetailModal.vue";
+import { useRouter } from "vue-router";
 
+const router = useRouter()
 const props = defineProps({
   review: Object, // 리뷰 데이터
 });
@@ -123,6 +127,28 @@ const closeReviewDetail = () => {
 const closeAlert = () => {
   showAlert.value = false;
 };
+
+const updateReview = () => {
+  router.push({ name: 'ReviewUpdateView', params: { review_id: reviewId}})
+}
+
+const deleteReview = () => {
+  const token = store.token;
+  axios({
+    method: 'delete',
+    url: `${API_URL}/api/v1/reviews/${reviewId}`,
+    headers: {
+      Authorization: `Token ${token}`
+    }
+  })
+  .then((response) => {
+    console.log('리뷰 삭제 완료')
+  })
+  .catch((error) => {
+    console.log(`리뷰 삭제 중 에러 발생 : ${error}`)
+  })
+  router.push({ name: 'MovieListView'})
+}
 </script>
 
 
