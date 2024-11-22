@@ -14,6 +14,7 @@ urlpatterns = [
     path('comments/<int:comment_pk>/', views.comment_delete),                           # 댓글, 대댓글 삭제
     path('reviews/<int:review_pk>/', views.review),                                     # 특정 리뷰 수정/삭제
     path('movies/<int:movie_pk>/', views.movie_detail),                                 # 영화 상세 페이지 결과 반환
+    path('movies/autocomplete/', views.movie_autocomplete),                                                       # 자동 완성 검색  
 
     path('movies/sample/', views.sample_movies),                                        # 회원가입 시 선택할 샘플 영화 반환
     path('movies/box-office/', views.box_office),                                       # 박스 오피스 영화 반환
