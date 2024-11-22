@@ -12,6 +12,15 @@
         <div
           class="movie-detail-content d-flex flex-column justify-content-center"
         >
+          <!-- 영화 추천 -->
+          <div class="like-container" @click="likeMovie">
+            <div class="like-heart">
+              <span class="like-text">{{ isMovieLiked ? '🖤' : '💗' }}</span>
+            </div>
+            <div class="like-message">
+              총 <span class="likes-count">{{ likes_count }}</span>명이 추천했어요!
+            </div>
+          </div>
           <div>{{ movieData.overview }}</div>
           <div class="movie-tagline gradient-text">
             "{{ movieData.tagline }}"
@@ -130,7 +139,13 @@
         </div>
       </div>
     </div>
+    <CustomAlertModal
+      v-if="showAlert"
+      :message="alertMessage"
+      @close="closeAlert"
+    />
   </div>
+  
 </template>
 
 <script setup>
@@ -144,6 +159,7 @@ import "swiper/swiper-bundle.css";
 
 import ReviewCard from "./ReviewCard.vue";
 import MovieRelatedVideo from "./MovieRelatedVideo.vue";
+import CustomAlertModal from "../CustomAlertModal.vue";
 const store = useAccountStore();
 
 const props = defineProps({
@@ -155,6 +171,11 @@ const reviewCount = ref(0);
 const reviewData = ref([]);
 const videosList = ref([]);
 const router = useRouter();
+
+const likes_count = ref(0);
+const isMovieLiked = ref(false); 
+const showAlert = ref(false);
+const alertMessage = ref("");
 
 const goToReviewForm = () => {
   router.push({ name: "ReviewCreateView", params: { movie_id: movieId } });
@@ -210,6 +231,76 @@ const closeModal = () => {
   isModalOpen.value = false;
   activeVideoUrl.value = "";
 };
+
+// 알림 모달 닫기
+const closeAlert = () => {
+  showAlert.value = false;
+};
+
+// 추천 여부 확인 함수
+const fetchMovieLikeStatus = async () => {
+  if (store.isLogin && movieId.value) {
+    try {
+      const response = await axios.get(
+        `${store.API_URL}/api/v1/user/${movieId.value}/is_liked/`,
+        {
+          headers: {
+            Authorization: `Token ${store.token}`,
+          },
+        }
+      );
+      isMovieLiked.value = response.data.is_liked;
+    } catch (error) {
+      console.error("추천 여부 확인 중 오류:", error);
+    }
+  }
+};
+
+// 추천 토글 
+const likeMovie = async () => {
+  if (!store.isLogin) {
+    alertMessage.value = "로그인한 회원만 추천할 수 있습니다.";
+    showAlert.value = true;
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${store.API_URL}/api/v1/movies/${movieId.value}/like/`,
+      {},
+      {
+        headers: {
+          Authorization: `Token ${store.token}`,
+        },
+      }
+    );
+    likes_count.value = response.data.likes_count;
+    isMovieLiked.value = !isMovieLiked.value; // 추천 여부 토글
+  } catch (error) {
+    console.error("추천 처리 중 오류:", error);
+  }
+};
+
+// props 변화 또는 초기 렌더링 시 데이터 로드
+watch(
+  () => props.movieData,
+  (newMovieData) => {
+    if (newMovieData && newMovieData.id) {
+      movieId.value = newMovieData.id;
+      likes_count.value = newMovieData.likes_count;
+      fetchMovieLikeStatus(); // 추천 여부 확인
+    }
+  },
+  { immediate: true } 
+);
+
+onMounted(() => {
+  if (props.movieData && props.movieData.id) {
+    movieId.value = props.movieData.id;
+    likes_count.value = props.movieData.likes_count;
+    fetchMovieLikeStatus(); // 추천 여부 확인
+  }
+});
 </script>
 
 <style scoped>
@@ -373,4 +464,48 @@ const closeModal = () => {
 .custom-next:hover {
   background-color: rgba(0, 0, 0, 0.8);
 }
+
+.like-container {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* 하트와 메시지 간격 */
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 10px;
+}
+
+.like-heart {
+  position: relative;
+  font-size: 3rem; /* 하트 크기 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+.like-container:hover .like-heart {
+  transform: scale(1.1); /* 하트 확대 효과 */
+}
+
+.like-text {
+  position: absolute;
+  top: 50%; /* 하트 중앙에 텍스트 배치 */
+  left: 50%;
+  transform: translate(-50%, -50%); /* 정확히 가운데 정렬 */
+  font-size: 1.5rem; /* 이모지 크기 */
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.7); /* 가독성을 위한 그림자 */
+  padding-left: 30px;
+}
+
+.like-message {
+  font-size: 1rem; /* 메시지 폰트 크기 */
+  color: #333; /* 메시지 텍스트 색상 */
+  font-weight: 500;
+  margin-left: 20px;
+}
+
+.likes-count {
+  font-weight: bold;
+}
+
 </style>

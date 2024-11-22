@@ -594,3 +594,15 @@ def toggle_follow(request, username):
         is_following = True
 
     return Response({'is_following': is_following, 'followings_count': user.followings.count()})
+
+# 영화 추천 여부 확인 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def is_liked(request, movie_pk):
+    try:
+        movie = Movie.objects.get(pk=movie_pk)
+        is_liked = movie.likes.filter(pk=request.user.pk).exists()
+        return Response({'is_liked': is_liked}, status=status.HTTP_200_OK)
+    except Movie.DoesNotExist:
+        return Response({"message": "존재하지 않는 영화입니다."}, status=status.HTTP_404_NOT_FOUND)
+
