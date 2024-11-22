@@ -146,6 +146,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
 # 댓글 작성 및 수정
 class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Comment
         fields = ('id', 'user', 'review', 'parent_comment', 'content', 'created_at', 'updated_at',)
