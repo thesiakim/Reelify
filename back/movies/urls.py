@@ -24,4 +24,5 @@ urlpatterns = [
     path('user-page/<str:username>/', views.user_page),                                 # 회원 페이지 
     path('user/<str:username>/follow/', views.toggle_follow),                           # 팔로우, 언팔로우
     path('user/<int:movie_pk>/is_liked/', views.is_liked),                              # 유저의 영화 추천 여부 확인 (화면 렌더링 시 호출하여 동적으로 아이콘 변경)
+    path('user/<str:username>/is_follow/', views.is_follow),                            # 유저의 유저페이지 주인 팔로우 여부 확인
 ]
