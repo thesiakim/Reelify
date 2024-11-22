@@ -271,10 +271,11 @@ onMounted(() => {
   margin-left: 20px;
   padding-left: 10px;
   border-left: 2px solid #ddd;
+  margin-top: 20px;
 }
 
 img {
-  width: 10px;
-  height: 10px;
+  width: 20px;
+  height: 20px;
 }
 </style>

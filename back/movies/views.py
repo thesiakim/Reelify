@@ -516,7 +516,7 @@ def comment_create(request, review_pk=None, comment_pk=None):
         except Review.DoesNotExist:
             return Response({"message": "존재하지 않는 리뷰입니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():
             serializer.save(user=request.user, review=review)  
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -529,7 +529,7 @@ def comment_create(request, review_pk=None, comment_pk=None):
         except Comment.DoesNotExist:
             return Response({"message": "존재하지 않는 댓글입니다."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = CommentSerializer(data=request.data)
+        serializer = CommentSerializer(data=request.data, context={'request':request})
         if serializer.is_valid():
             serializer.save(user=request.user, review=parent_comment.review, parent_comment=parent_comment)  # 사용자, 리뷰, 부모 댓글 설정
             return Response(serializer.data, status=status.HTTP_201_CREATED)
