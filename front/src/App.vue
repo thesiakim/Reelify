@@ -4,6 +4,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter, RouterLink, RouterView } from "vue-router";
 import axios from "axios";
 import { useAccountStore } from "./stores/accounts";
+import { debounce } from "lodash";
 
 const route = useRoute();
 const router = useRouter();
@@ -54,9 +55,41 @@ const navbarPositionClass = computed(() => {
 
 // 영화 검색
 const query = ref(null);
+const autocompleteResults = ref([]); // 자동완성 결과 저장
 const store = useAccountStore();
 const API_URL = store.API_URL;
 const searchResults = ref([]);
+
+const fetchAutocomplete = debounce(() => {
+  if (!query.value || query.value.trim() === "") {
+    autocompleteResults.value = [];
+    return;
+  }
+
+  axios({
+    method: "get",
+    url: `${API_URL}/api/v1/movies/autocomplete/`,
+    params: { query: query.value },
+  })
+    .then((response) => {
+      console.log("API 응답 데이터:", response.data); // 응답 데이터를 콘솔로 확인
+      autocompleteResults.value = response.data; // 결과를 그대로 저장
+      console.log("드롭다운 데이터:", autocompleteResults.value); // 드롭다운 데이터 확인
+    })
+    .catch((error) => {
+      console.error("자동완성 API 호출 중 오류:", error);
+    });
+}, 200);
+
+const handleInput = (event) => {
+  query.value = event.target.value;
+  fetchAutocomplete(); // 디바운스된 함수 호출
+};
+
+const selectAutocomplete = (title) => {
+  query.value = title; // 검색창에 선택된 제목 반영
+  autocompleteResults.value = []; // 자동완성 목록 닫기
+};
 
 const searchMovie = function () {
   if (!query.value || query.value.trim() === "") {
@@ -85,6 +118,37 @@ const searchMovie = function () {
       console.error("검색 중 에러 발생:", error);
     });
 };
+
+const activeIndex = ref(-1); // 활성화된 드롭다운 항목의 인덱스
+
+const handleKeydown = (event) => {
+  if (!autocompleteResults.value.length) return;
+
+  if (event.key === "ArrowDown") {
+    // 아래로 이동
+    activeIndex.value = (activeIndex.value + 1) % autocompleteResults.value.length;
+    event.preventDefault();
+  } else if (event.key === "ArrowUp") {
+    // 위로 이동
+    activeIndex.value =
+      (activeIndex.value - 1 + autocompleteResults.value.length) %
+      autocompleteResults.value.length;
+    event.preventDefault();
+  } else if (event.key === "Enter") {
+    // 엔터키로 선택
+    if (activeIndex.value >= 0) {
+      const selectedMovie = autocompleteResults.value[activeIndex.value];
+      selectAutocomplete(selectedMovie.title); // 선택한 제목 검색창에 반영
+      activeIndex.value = -1; // 인덱스 초기화
+      event.preventDefault();
+    }
+  } else if (event.key === "Escape") {
+    // ESC로 드롭다운 닫기
+    autocompleteResults.value = [];
+    activeIndex.value = -1;
+  }
+};
+
 
 // 로그아웃
 const logOut = function () {
@@ -172,18 +236,40 @@ const logOut = function () {
             <form
               @submit.prevent="searchMovie"
               v-show="isNavExpanded"
-              class="d-flex"
+              class="d-flex position-relative"
               role="search"
             >
               <input
                 class="form-control me-2"
                 type="text"
-                placeholder="영화 이름"
+                placeholder="어떤 영화가 궁금하세요?"
                 aria-label="Search"
-                v-model.trim="query"
+                v-model="query"
+                @input="handleInput"
+                @keydown="handleKeydown" 
               />
               <button class="btn search-btn">Search</button>
+
+              <!-- 자동완성 결과 -->
+              <ul
+                v-if="autocompleteResults.length > 0"
+                class="list-group position-absolute w-100"
+                style="top: 100%; z-index: 1000;"
+              >
+                <li
+                  v-for="(result, index) in autocompleteResults"
+                  :key="result.id"
+                  class="list-group-item list-group-item-action"
+                  :class="{ 'active': index === activeIndex }" 
+                  @click="selectAutocomplete(result.title)"
+                >
+                  {{ result.title }}
+                </li>
+              </ul>
             </form>
+
+
+
             <RouterLink
               v-if="store.isLogin === false"
               class="d-flex routerlink nav-item"
@@ -303,4 +389,10 @@ const logOut = function () {
 .relLog {
   cursor: pointer;
 }
+
+.active {
+  background-color: #f0c8d2;
+  color: white;
+}
+
 </style>

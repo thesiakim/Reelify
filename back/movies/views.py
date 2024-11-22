@@ -300,6 +300,22 @@ class MovieSearchListView(ListAPIView):
 
         return queryset
 
+# 영화 자동 완성 검색
+@api_view(['GET'])
+def movie_autocomplete(request):
+    search_query = request.query_params.get('query', None)
+    if not search_query:
+        return Response({"detail": "검색어를 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # title 또는 original_title에 검색어 포함 여부 확인
+    movies = Movie.objects.filter(
+        Q(title__icontains=search_query) |
+        Q(original_title__icontains=search_query)
+    ).order_by('-release_date')[:10]  # 최대 10개의 결과 반환
+
+    results = movies.values('id', 'title')  # 필요한 필드만 반환
+    return Response(results, status=status.HTTP_200_OK)
+
 #-------------------------------------------------------------------------------------------------------------
 
 # @api_view(['GET'])
