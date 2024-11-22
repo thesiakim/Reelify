@@ -3,7 +3,7 @@
     <div class="card-body">
       <!-- 왼쪽: 프로필 사진 및 유저 이름 -->
       <div class="user-section">
-        <img :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
+        <img @click="goToUserPage(review.user.username)" :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
         <p class="user-username">{{ review.user.username }}</p>
       </div>
 
@@ -126,6 +126,11 @@ const closeReviewDetail = () => {
 // 알림 모달 닫기
 const closeAlert = () => {
   showAlert.value = false;
+};
+
+// 유저 페이지 이동 함수
+const goToUserPage = function (username) {
+  router.push({ name: "UserPageView", params: { username: username } });
 };
 
 const updateReview = () => {
@@ -269,5 +274,15 @@ const deleteReview = () => {
   justify-content: space-between;
   align-items: center;
   margin-top: auto;
+}
+
+.user-profile-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+  cursor: pointer;
 }
 </style>
