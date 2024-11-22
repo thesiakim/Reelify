@@ -137,7 +137,7 @@ class CommentListSerializer(serializers.ModelSerializer):
 
     def get_replies(self, obj):
         replies = obj.replies.all()  # related_name='replies'로 연결된 대댓글
-        return CommentListSerializer(replies, many=True).data
+        return CommentListSerializer(replies, many=True, context=self.context).data
 
     def get_likes_count(self, obj):
         return obj.likes.count()

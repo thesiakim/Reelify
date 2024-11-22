@@ -339,6 +339,7 @@ def movie_detail(request, movie_pk):
     serializer = MovieDetailSerializer(movie, context={'request': request})
     return Response(serializer.data)
 
+
 #-------------------------------------------------------------------------------------------------------------
 
 # 특정 영화의 리뷰 목록
@@ -483,19 +484,22 @@ def review_detail(request, review_pk):
     serializer = ReviewSerializer(review)
     return Response(serializer.data)
 
-# 리뷰 추천, 추천 취소
+# 리뷰 추천
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def review_like_toggle(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
 
+    # 이미 추천한 경우
     if request.user in review.likes.all():
-        review.likes.remove(request.user)
-        liked = False
-    else:
-        review.likes.add(request.user)
-        liked = True
-    return Response({'liked': liked, 'likes_count': review.likes.count()}, status=status.HTTP_200_OK)
+        return Response( {"message": "이미 추천한 리뷰입니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # 신규 추천
+    review.likes.add(request.user)
+    return Response(
+        {"liked": True, "likes_count": review.likes.count()},
+        status=status.HTTP_200_OK
+    )
     
 
 
@@ -567,8 +571,8 @@ def update_profile_image(request):
 
 # 유저 페이지 
 @api_view(['GET'])
-def user_page(request, pk):
-    user = get_object_or_404(User, pk=pk)
+def user_page(request, username):
+    user = get_object_or_404(User, username=username)
     serializer = MyPageSerializer(user)
     return Response(serializer.data)
 
