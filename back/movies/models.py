@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from .utils import invalidate_user_cache
 
 User = get_user_model()
 
@@ -77,6 +78,19 @@ class Review(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['user', 'movie'], name='unique_user_movie_review')
         ]
+    
+    # 캐시 무효화 실행 
+    def save(self, *args, **kwargs):
+        # 기존 객체의 경우 rating이 변경되었을 때 캐시 무효화
+        if self.pk:  
+            old_instance = Review.objects.get(pk=self.pk)
+            if old_instance.rating != self.rating:
+                invalidate_user_cache(self.user.id)
+        # 새 객체일 경우 캐시 무효화
+        else:  
+            invalidate_user_cache(self.user.id)
+
+        super().save(*args, **kwargs)
 
 # 리뷰에 대한 코멘트
 class Comment(models.Model):
