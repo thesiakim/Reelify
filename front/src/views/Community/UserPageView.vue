@@ -5,14 +5,15 @@
       class="user-profile d-flex flex-row justify-content-between align-items-center"
     >
       <img
+        @click="goToUserPage(review.user.username)"
         :src="`${store.API_URL}${userData.profile_img}`"
-        class="user-img mx-5"
+        class="user-img"
         alt="profile_img"
       />
       <div class="profile-text text-center">
         <h3>{{ userData.username }}</h3>
         <p class="follow-text">
-          팔로우 {{ userData.followers_count }} &ensp;&ensp; 팔로잉{{
+          팔로우&ensp;{{ userData.followers_count }} &ensp;&ensp; 팔로잉&ensp;{{
             userData.followings_count
           }}
         </p>
@@ -21,7 +22,7 @@
         v-if="
           store.isLogin === true &&
           store.userName !== userData.username &&
-          isFollow === false
+          (isFollow != null && isFollow === false)
         "
         class="follow-btn"
       >
@@ -31,7 +32,7 @@
         v-else-if="
           store.isLogin === true &&
           store.userName !== userData.username &&
-          isFollow === true
+          (isFollow != null && isFollow === true)
         "
         class="follow-btn"
       >
@@ -51,7 +52,7 @@
       <hr />
       <div class="d-flex flex-row justify-content-evenly mt-4">
         <div class="text-center">
-          <p>좋아요 한 영화 수</p>
+          <p>추천한 영화 수</p>
           <span>{{ likeMovieCnt }}</span>
         </div>
         <div class="text-center">
@@ -68,8 +69,19 @@
 
     <!-- 좋아요 한 영화 목록 보여주기 -->
     <div>
+      <h2>{{ userData.username }}님이 추천하는 영화</h2>
       <UserLikeMovie :likemovie="likeMovie" />
+      <hr>
     </div>
+    <!-- 작성한 리뷰 보여주기 -->
+    <div>
+      <h2>{{ userData.username }}님이 작성한 리뷰</h2>
+      <!-- <ReviewCard v-for="review in userData.written_reviews" :key="review.id" :review="review"/> -->
+      <hr>
+    </div>
+
+
+
   </div>
 </template>
 
@@ -79,6 +91,7 @@ import { useRoute, useRouter } from "vue-router";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import UserLikeMovie from "@/components/Community/UserLikeMovie.vue";
+import ReviewCard from "@/components/Movies/ReviewCard.vue";
 
 const store = useAccountStore();
 const route = useRoute();
@@ -93,14 +106,16 @@ const writeReviewCnt = ref(0);
 console.log(route.params.username);
 
 // 초기에 팔로잉 했는지 안했는지 -> 수정 필요
-const isFollow = ref(false);
+const isFollow = ref(null);
 
 onMounted(() => {
+  // 유저 정보 조회하는 요청
   axios({
     method: "get",
     url: `${store.API_URL}/api/v1/user-page/${route.params.username}/`,
   })
     .then((res) => {
+    
       console.log(res.data);
       userData.value = res.data;
       likeMovie.value = res.data.liked_movies;
@@ -110,12 +125,31 @@ onMounted(() => {
       writeReview.value = res.data.written_reviews;
       writeReviewCnt.value = res.data.written_reviews.length;
       console.log(writeReviewCnt.value);
+      console.log(likeMovie.value)
     })
     .catch((err) => {
       console.log(err);
     });
+    
+    // 팔로잉 되어 있는지 아닌지 확인하는 요청
+    axios({
+      method: 'get',
+      url: `${store.API_URL}/api/v1/user/${route.params.username}/is_follow/`,
+      headers: {
+        Authorization: `Token ${store.token}`
+      }
+    })
+      .then((res) => {
+        console.log(res.data)
+        isFollow.value = res.data.is_following
+        console.log(isFollow.value)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
 });
 
+// 팔로우 구현
 const followUser = function (username) {
   axios({
     method: "post",
@@ -133,6 +167,7 @@ const followUser = function (username) {
       console.log(err);
     });
 };
+// 팔로우 취소 구현
 const unFollowUser = function (username) {
   axios({
     method: "post",
@@ -150,6 +185,11 @@ const unFollowUser = function (username) {
       console.log(err);
     });
 };
+
+// 유저 페이지 이동 함수
+const goToUserPage = function (username) {
+  router.push({ name: "UserPageView", params: { username: username } });
+};
 </script>
 
 <style scoped>
@@ -159,16 +199,17 @@ const unFollowUser = function (username) {
   border-radius: 50%;
   object-fit: cover;
   border: 5px solid #fba1b7;
+  cursor: pointer;
 }
 .user-profile {
   margin-top: 70px;
   margin-bottom: 70px;
-  margin-right: 20px;
-  margin-left: 20px;
+  margin-right: 150px;
+  margin-left: 40px;
 }
 .profile-text {
-  margin-right: 50px;
-  margin-left: 20px;
+  margin-right: 40px;
+  margin-left: 40px;
 }
 .follow-text {
   font-size: 20px;
