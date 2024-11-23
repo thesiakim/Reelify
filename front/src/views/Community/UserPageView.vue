@@ -47,6 +47,7 @@
       </div>
     </div>
 
+    
     <!-- 영화, 작성 - 추천 리뷰 보여주기 -->
     <div class="">
       <hr />
@@ -66,7 +67,7 @@
       </div>
       <hr />
     </div>
-
+    <RouterView />
     <!-- 좋아요 한 영화 목록 보여주기 -->
     <div>
       <h2>{{ userData.username }}님이 추천하는 영화</h2>
@@ -76,11 +77,27 @@
     <!-- 작성한 리뷰 보여주기 -->
     <div>
       <h2>{{ userData.username }}님이 작성한 리뷰</h2>
-      <!-- <ReviewCard v-for="review in userData.written_reviews" :key="review.id" :review="review"/> -->
-      <hr>
+      <div class="d-flex justify-content-end" v-if="userData && userData.written_reviews && userData.written_reviews.length > 3">
+        <button @click="goToUserReviewList(userData.username)">전체 리뷰 / 댓글 보기</button>
+      </div>
+      <div class="mt-4 d-flex flex-column align-items-center">
+        <UserReviewCard class="mb-4" v-for="review in limitedReviews" :key="review.id" :review="review"/>
+      </div>
+      
     </div>
+    <hr>
 
-
+    <!-- 추천한 리뷰 보여주기 -->
+    <div>
+      <h2>{{ userData.username }}님이 추천한 리뷰</h2>
+      <div class="d-flex justify-content-end" v-if="userData && userData.liked_reviews && userData.liked_reviews.length > 3">
+        <button @click="goToUserReviewList(userData.username)">전체 리뷰 / 댓글 보기</button>
+      </div>
+      <div class="mt-4 d-flex flex-column align-items-center">
+        <UserReviewCard class="mb-4" v-for="review in limitedLikeReviews" :key="review.id" :review="review"/>
+      </div>
+      
+    </div>
 
   </div>
 </template>
@@ -91,7 +108,8 @@ import { useRoute, useRouter } from "vue-router";
 import { onMounted, ref } from "vue";
 import axios from "axios";
 import UserLikeMovie from "@/components/Community/UserLikeMovie.vue";
-import ReviewCard from "@/components/Movies/ReviewCard.vue";
+import UserReviewCard from "@/components/Community/UserReviewCard.vue";
+import { RouterView } from "vue-router";
 
 const store = useAccountStore();
 const route = useRoute();
@@ -107,6 +125,9 @@ console.log(route.params.username);
 
 // 초기에 팔로잉 했는지 안했는지 -> 수정 필요
 const isFollow = ref(null);
+
+const limitedReviews = ref([]);
+const limitedLikeReviews = ref([])
 
 onMounted(() => {
   // 유저 정보 조회하는 요청
@@ -124,8 +145,17 @@ onMounted(() => {
       likeReviewCnt.value = res.data.liked_reviews.length;
       writeReview.value = res.data.written_reviews;
       writeReviewCnt.value = res.data.written_reviews.length;
-      console.log(writeReviewCnt.value);
-      console.log(likeMovie.value)
+
+      // 리뷰가 3개 이상이면 3개만 가져오기
+      limitedReviews.value = res.data.written_reviews.length > 3
+        ? res.data.written_reviews.slice(0,3)
+        : res.data.written_reviews
+
+      limitedLikeReviews.value = res.data.liked_reviews.length > 3
+        ? res.data.liked_reviews.slice(0, 3)
+        : res.data.liked_reviews
+      
+      console.log(limitedReviews.value)
     })
     .catch((err) => {
       console.log(err);
@@ -148,6 +178,8 @@ onMounted(() => {
         console.log(err)
       })
 });
+
+
 
 // 팔로우 구현
 const followUser = function (username) {
@@ -190,6 +222,11 @@ const unFollowUser = function (username) {
 const goToUserPage = function (username) {
   router.push({ name: "UserPageView", params: { username: username } });
 };
+
+// 유저가 쓴 전체 리뷰 페이지 이동 함수
+const goToUserReviewList = function (username) {
+  router.push({ name: "UserReviewListView", params: { username: username}})
+}
 </script>
 
 <style scoped>
