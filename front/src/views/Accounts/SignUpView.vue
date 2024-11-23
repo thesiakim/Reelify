@@ -12,9 +12,7 @@
             class="form-control"
             placeholder="사용자 별명을 입력하세요"
           />
-          <span v-if="usernameError" class="text-danger">{{
-            usernameError
-          }}</span>
+          <span v-if="usernameError" class="text-danger">{{ usernameError }}</span>
         </div>
 
         <div class="form-group">
@@ -26,9 +24,7 @@
             class="form-control"
             placeholder="비밀번호를 입력하세요"
           />
-          <span v-if="passwordError" class="text-danger">{{
-            passwordError
-          }}</span>
+          <span v-if="passwordError" class="text-danger">{{ passwordError }}</span>
         </div>
 
         <div class="form-group">
@@ -40,51 +36,54 @@
             class="form-control"
             placeholder="비밀번호를 다시 입력하세요"
           />
-          <span v-if="passwordError2" class="text-danger">{{
-            passwordError2
-          }}</span>
+          <span v-if="passwordError2" class="text-danger">{{ passwordError2 }}</span>
         </div>
 
         <div class="form-group">
-          <label>좋아하는 영화 5개를 선택해주세요</label>
-          <div class="movies-container">
-            <div
-              v-for="movie in movies"
-              :key="movie.id"
-              class="movie-card"
-              :class="{ selected: selectedMovies.includes(movie.id) }"
-              @click="toggleMovieSelection(movie.id)"
+          <label>좋아하시는 장르를 선택하세요</label>
+          <p v-if="movieError" class="text-danger">{{ movieError }}</p>
+          <p v-else class="text-custom">현재 선택한 영화는 {{ selectedMovies.length }}개 입니다.</p>
+          <div class="genre-button-container">
+            <button
+              v-for="group in genreGroups"
+              :key="group.name"
+              class="btn genre-btn m-2"
+              @click.prevent="openModal(group.ids)"
             >
-              <img
-                :src="store.getPosterPath(movie.poster_path)"
-                :alt="movie.title"
-              />
-              <p>{{ movie.title }}</p>
-            </div>
+              {{ group.name }}
+            </button>
           </div>
-          <span v-if="movieError" class="text-danger">{{ movieError }}</span>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3">회원가입</button>
+        <button type="submit" class="btn btn-primary mt-3">등록</button>
       </form>
     </div>
+
+    <!-- MovieSignUpModal -->
+    <MovieSignUpModal
+      v-if="showModal"
+      :show="showModal"
+      :genreIds="selectedGenreIds"
+      :alreadySelectedMovies="selectedMovies"
+      @close="closeModal"
+      @moviesSelected="handleMoviesSelected"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 import { useAccountStore } from "@/stores/accounts";
-import { useRouter } from "vue-router";
+import MovieSignUpModal from "@/components/Movies/MovieSignUpModal.vue";
 
 const store = useAccountStore();
-const router = useRouter()
+const router = useRouter();
 
 const username = ref(null);
 const password1 = ref(null);
 const password2 = ref(null);
-const movies = ref([]);
-const selectedMovies = ref([]);
 const movieError = ref(null);
 
 // 에러 메시지
@@ -92,30 +91,33 @@ const usernameError = ref(null);
 const passwordError = ref(null);
 const passwordError2 = ref(null);
 
-// 영화 데이터 요청
-onMounted(() => {
-  axios({
-    url: "http://127.0.0.1:8000/api/v1/movies/sample/",
-    method: "get",
-  })
-    .then((response) => {
-      movies.value = response.data;
-    })
-    .catch((error) => {
-      console.log(`회원 가입 시 샘플 영화 조회 에러 : ${error}`);
-    });
-});
+const genreGroups = [
+  { name: "모험 & 판타지", ids: [12, 14] },
+  { name: "로맨스", ids: [10749] },
+  { name: "드라마 & 코미디", ids: [18, 35] },
+  { name: "애니메이션 & TV 영화", ids: [16, 10770] },
+  { name: "음악 & 가족", ids: [10402, 10751] },
+  { name: "공포 & 스릴러", ids: [27, 53] },
+  { name: "SF & 미스터리", ids: [878, 9648] },
+  { name: "액션 & 범죄", ids: [28, 80] },
+  { name: "역사 & 다큐멘터리", ids: [36, 99] },
+  { name: "서부 & 전쟁", ids: [37, 10752] },
+];
 
-// 영화 선택 토글
-const toggleMovieSelection = (movieId) => {
-  if (selectedMovies.value.includes(movieId)) {
-    selectedMovies.value = selectedMovies.value.filter((id) => id !== movieId);
-  } else if (selectedMovies.value.length < 5) {
-    selectedMovies.value.push(movieId);
-  }
+const showModal = ref(false);
+const selectedGenreIds = ref([]);
+const selectedMovies = ref([]);
+
+const openModal = (genreIds) => {
+  selectedGenreIds.value = genreIds;
+  showModal.value = true;
 };
 
-// 회원가입 요청 함수
+const closeModal = () => {
+  showModal.value = false;
+};
+
+
 const signUp = () => {
   const payload = {
     username: username.value,
@@ -124,20 +126,13 @@ const signUp = () => {
     selectedMovies: selectedMovies.value,
   };
 
-  // 초기화
-  usernameError.value = null;
-  passwordError.value = null;
-
-  axios({
-    method: "post",
-    url: `${store.API_URL}/accounts/signup/`,
-    data: payload,
-  })
+  axios
+    .post(`${store.API_URL}/accounts/signup/`, payload)
     .then(() => {
       console.log("회원가입 성공");
       const password = password1.value;
-      store.logIn({ username: username.value, password }); // 자동 로그인
-      router.push({ name: 'HomeView'})
+      store.logIn({ username: username.value, password });
+      router.push({ name: "HomeView" });
     })
     .catch((err) => {
       if (err.response && err.response.data) {
@@ -146,64 +141,120 @@ const signUp = () => {
         }
         if (err.response.data.password1) {
           passwordError.value =
-            "비밀번호는 최소 9글자 이상이고 숫자와 문자를 모두 사용해야 합니다.";
+            "비밀번호는 최소 8글자 이상이어야 합니다.";
         }
         if (err.response.data.non_field_errors) {
           passwordError.value = "비밀번호가 일치하지 않습니다.";
         }
       } else {
-        console.error(
-          "서버와의 연결에 문제가 발생했습니다. 다시 시도해주세요."
-        );
+        console.error("서버와의 연결에 문제가 발생했습니다. 다시 시도해주세요.");
       }
     });
 };
 
-// 회원가입 유효성 검사
 const validateSignUp = () => {
-  if (selectedMovies.value.length < 5) {
-    movieError.value = "5개의 영화를 선택해주세요";
+  let hasError = false;
+
+  // 사용자 이름 검증
+  if (!username.value) {
+    usernameError.value = "별명을 입력해주세요";
+    hasError = true;
+  } else {
+    usernameError.value = null;
+  }
+
+  // 비밀번호 검증
+  if (!password1.value) {
+    passwordError.value = "비밀번호를 입력해주세요";
+    hasError = true;
+  } else {
+    passwordError.value = null;
+  }
+
+  // 비밀번호 확인 검증
+  if (!password2.value) {
+    passwordError2.value = "비밀번호를 다시 입력해주세요";
+    hasError = true;
+  } else if (password1.value !== password2.value) {
+    passwordError2.value = "비밀번호가 일치하지 않습니다.";
+    hasError = true;
+  } else {
+    passwordError2.value = null;
+  }
+
+  // 영화 선택 검증
+  if (selectedMovies.value.length < 10) {
+    movieError.value = "10개의 영화를 선택해주세요";
+    hasError = true;
   } else {
     movieError.value = null;
+  }
+
+  if (!hasError) {
     signUp();
   }
 };
 
-// 사용자 이름 실시간 유효성 검사
-watch(username, () => {
-  if (!username.value) {
-    usernameError.value = "사용자 별명은 필수입니다.";
-  } else if (username.value && username.value.length < 3) {
-    usernameError.value = "사용자 별명은 최소 3글자 이상이어야 합니다.";
-  } else {
+const handleMoviesSelected = (movies) => {
+  selectedMovies.value = movies;
+
+  // 선택된 영화가 존재하면 에러 메시지 제거
+  if (selectedMovies.value.length > 0) {
+    movieError.value = null;
+  }
+
+  console.log("현재 선택된 영화:", selectedMovies.value);
+};
+
+
+
+// 사용자 입력을 감지하여 에러 메시지 초기화
+watch(username, (newVal) => {
+  if (newVal) {
     usernameError.value = null;
   }
 });
 
-// 비밀번호1 실시간 유효성 검사
-watch(password1, () => {
-  if (password1.value && password1.value.length < 9) {
-    passwordError.value = "비밀번호는 최소 9글자 이상이어야 합니다.";
-  } else if (
-    password1.value &&
-    !/[A-Za-z]/.test(password1.value) &&
-    !/\d/.test(password1.value)
-  ) {
-    passwordError.value = "비밀번호는 문자와 숫자를 모두 포함해야 합니다.";
-  } else {
+watch(password1, (newVal) => {
+  if (newVal) {
     passwordError.value = null;
   }
 });
 
-// 비밀번호2 실시간 유효성 검사
-watch(password2, () => {
-  if (password2.value !== password1.value) {
+watch(password2, (newVal) => {
+  if (newVal) {
+    passwordError2.value = null;
+  }
+});
+
+watch(password1, (newPassword) => {
+  if (!newPassword) {
+    passwordError.value = "비밀번호를 입력해주세요";
+  } else {
+    passwordError.value = null;
+  }
+
+  // 비밀번호 확인과 일치 여부도 동시에 검증
+  if (password2.value && newPassword !== password2.value) {
     passwordError2.value = "비밀번호가 일치하지 않습니다.";
   } else {
     passwordError2.value = null;
   }
 });
+
+watch(password2, (newPasswordConfirm) => {
+  if (!newPasswordConfirm) {
+    passwordError2.value = "비밀번호를 다시 입력해주세요";
+  } else if (password1.value !== newPasswordConfirm) {
+    passwordError2.value = "비밀번호가 일치하지 않습니다.";
+  } else {
+    passwordError2.value = null;
+  }
+});
+
 </script>
+
+
 
 <style scoped>
 .signup-box {
@@ -236,8 +287,9 @@ watch(password2, () => {
 }
 
 .form-control:focus {
-  border-color: #007bff;
-  outline: none;
+  border-color: #fba1b7;        /* 입력칸 테두리 색상 */
+  box-shadow: 0 0 5px #fba1b7;  /* 강조 효과 */
+  outline: none;                  /* 기본 파란색 테두리 제거 */
 }
 
 .movies-container {
@@ -303,5 +355,23 @@ watch(password2, () => {
 
 .btn-primary:hover {
   background-color: #e98fa5;
+}
+
+.genre-btn {
+  border: 1px solid #e98fa5;
+  color: #e98fa5;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.genre-btn:hover {
+  background-color: #fba1b7;
+  color: #fff;
+}
+
+.text-custom {
+  color: darkgrey;
+  font-size: 14px;
+  padding-left: 6px;
 }
 </style>

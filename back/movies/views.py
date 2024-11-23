@@ -3,9 +3,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django.db.models import Q
-from django.db.models import Count
-from django.db.models import Prefetch
+from django.db.models import Avg, Count, Max, Q, Prefetch, FloatField
+from django.db.models.functions import Coalesce
 from datetime import datetime, timedelta
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import NotFound
@@ -15,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from rest_framework import status
 
+from .utils import invalidate_user_cache
 from movies.models import Movie, Country, Genre, Review, Comment
 from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer
 
@@ -26,61 +26,190 @@ import requests
 User = get_user_model()
 
 '''
-회원 가입 시 사용
+버전 1) 회원 가입 시 사용
 장르와 popularity를 기준으로 메이저한 영화들을 뽑아서 장르별로 고르게 랜덤 추출한 뒤 반환
+'''
+# @api_view(['GET'])
+# def sample_movies(request):
+#     # 관심 장르 ID들
+#     target_genre_ids = [27, 28, 80, 878, 10749, 10402]   # 공포, 액션, 범죄, SF, 로맨스, 음악 
+#     movies_per_genre = {}  # 장르별 영화 저장
+
+#     # 각 장르별 상위 10개 인기 영화 가져오기
+#     for genre_id in target_genre_ids:
+#         genre_movies = (
+#             Movie.objects.filter(genres__id=genre_id)
+#             .order_by('-popularity')[:10]
+#         )
+#         movies_per_genre[genre_id] = list(genre_movies)
+
+#     # 중복 방지용 집합과 최종 리스트
+#     unique_movies = set()
+#     sampled_movies = []
+
+#     # 각 장르에서 최대 3개 샘플링
+#     for genre_id, movies in movies_per_genre.items():
+#         genre_sample = random.sample(movies, min(len(movies), 3))
+#         for movie in genre_sample:
+#             if movie.id not in unique_movies:
+#                 sampled_movies.append(movie)
+#                 unique_movies.add(movie.id)
+
+#     # 부족한 영화 수만큼 추가 샘플링 (최종 20개)
+#     all_movies = [
+#         movie for movies in movies_per_genre.values() for movie in movies
+#         if movie.id not in unique_movies
+#     ]
+
+#     while len(sampled_movies) < 20 and all_movies:
+#         additional_movie = random.choice(all_movies)
+#         if additional_movie.id not in unique_movies:
+#             sampled_movies.append(additional_movie)
+#             unique_movies.add(additional_movie.id)
+
+#     # 정확히 20개로 자르기 (초과될 경우)
+#     sampled_movies = sampled_movies[:20]
+
+#     result = [
+#         {
+#             "id": movie.id,
+#             "title": movie.title,
+#             "popularity": movie.popularity,
+#             "poster_path": movie.poster_path,
+#             "genres": [genre.name for genre in movie.genres.all()],
+#         }
+#         for movie in sampled_movies
+#     ]
+#     return Response(result, status=status.HTTP_200_OK)
+
+'''
+버전 2) 회원 가입 시 사용
+사용자가 선택한 장르 중 popularity를 기준으로 30개를 정렬한 뒤 랜덤으로 추출
+요청 형식 : /api/v1/movies/sample/?genre_ids=12,14
 '''
 @api_view(['GET'])
 def sample_movies(request):
-    # 관심 장르 ID들
-    target_genre_ids = [27, 28, 80, 878, 10749, 10402]
-    movies_per_genre = {}  # 장르별 영화 저장
+    genre_ids = request.query_params.get("genre_ids", "")
+    genre_ids = [int(genre_id) for genre_id in genre_ids.split(",") if genre_id.isdigit()]
 
-    # 각 장르별 상위 10개 인기 영화 가져오기
-    for genre_id in target_genre_ids:
+    # 장르 필터링
+    movies = (
+        Movie.objects.filter(genres__id__in=genre_ids)
+        .distinct()  # 중복 제거, 같은 영화가 여러 장르에 속할 수 있음 (다대다 관계)
+        .order_by('-popularity')[:50]
+    )
+
+    movies = list(movies.values('id', 'title', 'poster_path'))
+    sampled_movies = random.sample(movies, min(len(movies), 16))
+
+    return Response(sampled_movies, status=status.HTTP_200_OK)
+
+# @api_view(['GET'])
+# def get_genres(request):
+#     genres = Genre.objects.all().values('id','name')
+#     return Response(list(genres), status=status.HTTP_200_OK)
+
+
+'''
+사용자의 리뷰 데이터를 기반으로 선호 장르 계산 및 캐싱 
+invalidate_user_cache를 통해 리뷰 또는 추천 변경 시 캐시 무효화
+'''
+def get_top_genres(user, max_genres=3):
+    cache_key = f"user_{user.id}_top_genres"
+    cached_genres = cache.get(cache_key)
+
+    if cached_genres:
+        print('장르 캐시됨')
+        return cached_genres
+
+    genres = (
+        Review.objects.filter(user=user)
+        .values("movie__genres__id", "movie__genres__name")
+        .annotate(
+            avg_rating=Avg("rating"),
+            review_count=Count("id"),
+            latest_review=Max("created_at"),
+        )
+        .annotate(
+            # Coalesce와 Count 혼합 결과를 FloatField로 명시
+            weighted_score=Coalesce(Avg("rating"), 0, output_field=FloatField())
+            + Count("id") / 10.0  # 정수를 부동소수점으로 변환
+        )
+        .order_by("-weighted_score", "-latest_review")
+    )
+
+    total_reviews = genres.aggregate(total=Count("review_count"))["total"]
+    dynamic_genres = min(max_genres, max(1, total_reviews // 10))
+
+    top_genres = list(genres[:dynamic_genres])
+    cache.set(cache_key, top_genres, timeout=60 * 60 * 12)  # 12시간 캐싱
+
+    return top_genres
+
+
+'''
+사용자가 선호하는 장르 데이터를 기반으로 추천 영화 추출 
+- 기준 : popularity, release_date
+- prefetch_related를 활용하여 Movie의 외래 키와 다대다 관계를 최적화
+- 리뷰 데이터가 적은 사용자를 고려해 선호 장르의 개수를 동적으로 조절
+- 최신 개봉작(release_date)과 popularity를 활용해 영화 순위 결정
+'''
+import random
+
+def get_movies_by_genres(user, genres):
+    movies = []
+    recent_cutoff = datetime.now() - timedelta(days=365 * 2)
+
+    for genre in genres:
+        genre_id = genre["movie__genres__id"]
         genre_movies = (
             Movie.objects.filter(genres__id=genre_id)
-            .order_by('-popularity')[:10]
+            .exclude(Q(review__user=user) | Q(likes=user))
+            .prefetch_related("genres", "actors", "directors")
+            .annotate(
+                recent_bonus=Coalesce(
+                    Avg("popularity") +
+                    (Count("release_date", filter=Q(release_date__gte=recent_cutoff)) * 10),
+                    0,
+                    output_field=FloatField(),
+                )
+            )
+            .order_by("-recent_bonus")
         )
-        movies_per_genre[genre_id] = list(genre_movies)
+        sample_movies = list(genre_movies[:50])  # 슬라이스 후 리스트로 변환
+        random_movies = random.sample(sample_movies, min(10, len(sample_movies)))  # Python에서 랜덤 샘플링
+        movies.extend(random_movies)
 
-    # 중복 방지용 집합과 최종 리스트
-    unique_movies = set()
-    sampled_movies = []
+    return movies
 
-    # 각 장르에서 최대 3개 샘플링
-    for genre_id, movies in movies_per_genre.items():
-        genre_sample = random.sample(movies, min(len(movies), 3))
-        for movie in genre_sample:
-            if movie.id not in unique_movies:
-                sampled_movies.append(movie)
-                unique_movies.add(movie.id)
 
-    # 부족한 영화 수만큼 추가 샘플링 (최종 20개)
-    all_movies = [
-        movie for movies in movies_per_genre.values() for movie in movies
-        if movie.id not in unique_movies
-    ]
 
-    while len(sampled_movies) < 20 and all_movies:
-        additional_movie = random.choice(all_movies)
-        if additional_movie.id not in unique_movies:
-            sampled_movies.append(additional_movie)
-            unique_movies.add(additional_movie.id)
 
-    # 정확히 20개로 자르기 (초과될 경우)
-    sampled_movies = sampled_movies[:20]
+'''
+장르 기반 영화 추천
+'''
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def recommend_by_genre(request):
+    user = request.user
+    print(f'user={user}')
 
-    result = [
+    # 사용자 선호 상위 장르 계산
+    top_genres = get_top_genres(user)
+
+    # 장르별 영화 추출
+    recommended_movies = get_movies_by_genres(user, top_genres)
+
+    response = [
         {
             "id": movie.id,
             "title": movie.title,
-            "popularity": movie.popularity,
             "poster_path": movie.poster_path,
-            "genres": [genre.name for genre in movie.genres.all()],
         }
-        for movie in sampled_movies
+        for movie in recommended_movies
     ]
-    return Response(result, status=status.HTTP_200_OK)
+    return Response(response)
+
 
 #--------------------------------------------------------------------------------------------------------
 
@@ -91,6 +220,7 @@ def sample_movies(request):
 # 유니코드 특수문자를 포함한 모든 특수문자 제거 
 def clean_title(title): 
     return re.sub(r'[^\w\s]|Ⅱ', '', title, flags=re.UNICODE)
+
 
 @api_view(['GET'])
 def box_office(request):
@@ -191,7 +321,9 @@ def box_office(request):
 
     return Response(results)
 
+
 #-------------------------------------------------------------------------------------------------------------
+
 
 # 영화 추천, 추천 취소
 @api_view(['POST'])
@@ -207,8 +339,6 @@ def movie_like_toggle(request, movie_pk):
         liked = True
 
     return Response({'liked': liked, 'likes_count': movie.likes.count()}, status=status.HTTP_200_OK)
-
-
 
 
 '''
@@ -282,6 +412,7 @@ class MovieFilteringListView(ListAPIView):
 
 #-------------------------------------------------------------------------------------------------------------
 
+
 # 영화 검색 (제목만 허용)
 class MovieSearchListView(ListAPIView):
     serializer_class = MovieListSerializer
@@ -300,6 +431,7 @@ class MovieSearchListView(ListAPIView):
 
         return queryset
 
+
 # 영화 자동 완성 검색
 @api_view(['GET'])
 def movie_autocomplete(request):
@@ -315,6 +447,7 @@ def movie_autocomplete(request):
 
     results = movies.values('id', 'title')  # 필요한 필드만 반환
     return Response(results, status=status.HTTP_200_OK)
+
 
 #-------------------------------------------------------------------------------------------------------------
 
@@ -357,6 +490,7 @@ def movie_detail(request, movie_pk):
 
 
 #-------------------------------------------------------------------------------------------------------------
+
 
 # 특정 영화의 리뷰 목록
 '''
@@ -403,6 +537,7 @@ class ReviewListView(ListAPIView):
 
 #-------------------------------------------------------------------------------------------------------------
 
+
 # 특정 리뷰의 댓글, 대댓글 목록
 '''
 - 각 리뷰에 달린 댓글의 세부 정보(id, 작성자, 내용, 추천수, 작성일), 
@@ -433,7 +568,9 @@ class ReviewCommentListView(ListAPIView):
         review_id = self.kwargs.get('review_pk')
         return Comment.objects.filter(review_id=review_id, parent_comment__isnull=True).order_by('-created_at')
 
+
 # -------------------------------------------------------------------------------------------------------------
+
 
 # 리뷰 작성
 @api_view(['POST'])
@@ -462,6 +599,7 @@ def create_review(request, movie_pk):
             },
             status=status.HTTP_400_BAD_REQUEST
         )
+
 
 # 리뷰 수정, 삭제
 @api_view(['PUT', 'DELETE'])
@@ -493,12 +631,14 @@ def review(request, review_pk):
         review.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 # 단일 리뷰 조회 
 @api_view(['GET'])
 def review_detail(request, review_pk):
     review = get_object_or_404(Review, pk=review_pk)
     serializer = ReviewSerializer(review)
     return Response(serializer.data)
+
 
 # 리뷰 추천
 @api_view(['POST'])
@@ -518,8 +658,8 @@ def review_like_toggle(request, review_pk):
     )
     
 
-
 # -------------------------------------------------------------------------------------------------------------
+
 
 # 댓글, 대댓글 작성
 @api_view(['POST'])
@@ -592,6 +732,7 @@ def user_page(request, username):
     serializer = MyPageSerializer(user)
     return Response(serializer.data)
 
+
 # 팔로우, 언팔로우
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -611,6 +752,7 @@ def toggle_follow(request, username):
 
     return Response({'is_following': is_following, 'followings_count': user.followings.count()})
 
+
 # 영화 추천 여부 확인 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -622,6 +764,7 @@ def is_liked(request, movie_pk):
     except Movie.DoesNotExist:
         return Response({"message": "존재하지 않는 영화입니다."}, status=status.HTTP_404_NOT_FOUND)
 
+
 # 팔로우 여부 확인
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -629,6 +772,7 @@ def is_follow(request, username):
     target_user = get_object_or_404(User, username=username)
     is_following = request.user.followings.filter(id=target_user.id).exists()
     return Response({ "is_following": is_following })
+
 
 # 회원 탈퇴
 @api_view(['DELETE'])
