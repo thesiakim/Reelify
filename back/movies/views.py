@@ -1,11 +1,13 @@
-from django.shortcuts import get_object_or_404, get_list_or_404
+from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 from django.db import connection
-from django.db.models import Avg, Count, Max, Q, Prefetch, FloatField
+from django.db.models import Avg, Count, Max, Q, Prefetch, FloatField, OuterRef, Subquery, F, ExpressionWrapper, Sum, Value
 from django.db.models.functions import Coalesce
 from datetime import datetime, timedelta
+from collections import OrderedDict, Counter
+from itertools import chain
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import api_view, permission_classes
@@ -14,14 +16,13 @@ from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from rest_framework import status
 
-from .utils import invalidate_user_cache
-from movies.models import Movie, Country, Genre, Review, Comment
+from movies.models import Movie, Country, Genre, Review, Comment, Actor, Director
 from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer
-
-
-import re
-import random
-import requests
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse import csr_matrix
+from heapq import nlargest
+import re, random, requests
+import numpy as np
 
 User = get_user_model()
 
@@ -104,114 +105,117 @@ def sample_movies(request):
 
     return Response(sampled_movies, status=status.HTTP_200_OK)
 
-# @api_view(['GET'])
-# def get_genres(request):
-#     genres = Genre.objects.all().values('id','name')
-#     return Response(list(genres), status=status.HTTP_200_OK)
+#--------------------------------------------------------------------------------------------------------
+
+def collaborative_filtering_recommendations(user, exclude_movies=set(), max_recommendations=10):
+    # 사용자 리뷰 데이터
+    user_reviewed_movies = Review.objects.filter(user=user).values_list('movie', flat=True)
+
+    # 유사 사용자 ID 추출
+    similar_users = User.objects.exclude(id=user.id).filter(
+        review__movie__in=user_reviewed_movies
+    ).values('id')
+
+    # 유사 사용자가 좋아한 영화 추천
+    recommended_movies = Movie.objects.filter(
+        review__user__in=Subquery(similar_users)
+    ).exclude(
+        id__in=exclude_movies
+    ).distinct().prefetch_related(
+        'directors', 'genres', 'actors', 'likes'
+    ).annotate(
+        avg_rating=Avg('review__rating'),
+        like_count=Count('likes'),
+        calculated_popularity=F('popularity')
+    ).order_by('-avg_rating', '-like_count', '-calculated_popularity')[:max_recommendations]
+
+    return recommended_movies
 
 
-'''
-사용자의 리뷰 데이터를 기반으로 선호 장르 계산 및 캐싱 
-invalidate_user_cache를 통해 리뷰 또는 추천 변경 시 캐시 무효화
-'''
-def get_top_genres(user, max_genres=3):
-    cache_key = f"user_{user.id}_top_genres"
-    cached_genres = cache.get(cache_key)
 
-    if cached_genres:
-        print('장르 캐시됨')
-        return cached_genres
+def content_based_recommendations(user, exclude_movies=set(), max_recommendations=10):
+    # 사용자 리뷰를 기반으로 선호 속성 가져오기
+    user_reviewed_movies = Review.objects.filter(user=user).values_list('movie', flat=True)
 
-    genres = (
-        Review.objects.filter(user=user)
-        .values("movie__genres__id", "movie__genres__name")
-        .annotate(
-            avg_rating=Avg("rating"),
-            review_count=Count("id"),
-            latest_review=Max("created_at"),
-        )
-        .annotate(
-            # Coalesce와 Count 혼합 결과를 FloatField로 명시
-            weighted_score=Coalesce(Avg("rating"), 0, output_field=FloatField())
-            + Count("id") / 10.0  # 정수를 부동소수점으로 변환
-        )
-        .order_by("-weighted_score", "-latest_review")
+    # 선호 장르, 배우, 감독 미리 로드
+    preferred_genres = Genre.objects.filter(movies__in=user_reviewed_movies).distinct()
+    preferred_actors = Actor.objects.filter(movies__in=user_reviewed_movies).distinct()
+    preferred_directors = Director.objects.filter(movies__in=user_reviewed_movies).distinct()
+
+    # 영화 추천
+    recommended_movies = Movie.objects.filter(
+        Q(genres__in=preferred_genres) |
+        Q(actors__in=preferred_actors) |
+        Q(directors__in=preferred_directors)
+    ).exclude(
+        id__in=exclude_movies
+    ).distinct().prefetch_related(
+        'directors', 'genres', 'actors', 'likes'
+    ).annotate(
+        avg_rating=Avg('review__rating'),
+        like_count=Count('likes'),
+        score=F('popularity')  
+    ).order_by('-score')[:max_recommendations]
+
+    return recommended_movies
+
+
+
+def get_combined_recommendations(user, max_recommendations=15):
+    # 캐시 키 정의
+    cache_key = f"user_{user.id}_recommendations"
+    cached_recommendations = cache.get(cache_key)
+
+    if cached_recommendations:
+        # 캐시에 데이터가 있으면 반환
+        print('추천 알고리즘 : 캐시된 데이터 사용')
+        return cached_recommendations
+
+    # 사용자가 이미 리뷰한 영화 제외
+    exclude_movies = list(
+        Review.objects.filter(user=user).values_list('movie_id', flat=True)
     )
 
-    total_reviews = genres.aggregate(total=Count("review_count"))["total"]
-    dynamic_genres = min(max_genres, max(1, total_reviews // 10))
+    # 협업 필터링 추천
+    collab_recommendations = collaborative_filtering_recommendations(user, exclude_movies, max_recommendations)
 
-    top_genres = list(genres[:dynamic_genres])
-    cache.set(cache_key, top_genres, timeout=60 * 60 * 12)  # 12시간 캐싱
+    # 콘텐츠 기반 추천
+    content_recommendations = content_based_recommendations(user, exclude_movies, max_recommendations)
 
-    return top_genres
+    # 중복 제거 및 병합
+    combined_movie_ids = set(
+        [movie.id for movie in collab_recommendations] +
+        [movie.id for movie in content_recommendations]
+    )
 
+    # 최종 영화 QuerySet으로 가져오기
+    combined_movies = Movie.objects.filter(
+        id__in=combined_movie_ids
+    ).annotate(
+        avg_rating=Avg('review__rating'),
+        like_count=Count('likes'),
+        calculated_popularity=F('popularity')
+    ).order_by('-calculated_popularity', '-avg_rating', '-like_count')[:max_recommendations]
 
-'''
-사용자가 선호하는 장르 데이터를 기반으로 추천 영화 추출 
-- 기준 : popularity, release_date
-- prefetch_related를 활용하여 Movie의 외래 키와 다대다 관계를 최적화
-- 리뷰 데이터가 적은 사용자를 고려해 선호 장르의 개수를 동적으로 조절
-- 최신 개봉작(release_date)과 popularity를 활용해 영화 순위 결정
-'''
-import random
+    # 캐시에 저장 (기본 15분)
+    cache.set(cache_key, combined_movies, 60 * 15)
 
-def get_movies_by_genres(user, genres):
-    movies = []
-    recent_cutoff = datetime.now() - timedelta(days=365 * 2)
-
-    for genre in genres:
-        genre_id = genre["movie__genres__id"]
-        genre_movies = (
-            Movie.objects.filter(genres__id=genre_id)
-            .exclude(Q(review__user=user) | Q(likes=user))
-            .prefetch_related("genres", "actors", "directors")
-            .annotate(
-                recent_bonus=Coalesce(
-                    Avg("popularity") +
-                    (Count("release_date", filter=Q(release_date__gte=recent_cutoff)) * 10),
-                    0,
-                    output_field=FloatField(),
-                )
-            )
-            .order_by("-recent_bonus")
-        )
-        sample_movies = list(genre_movies[:50])  # 슬라이스 후 리스트로 변환
-        random_movies = random.sample(sample_movies, min(10, len(sample_movies)))  # Python에서 랜덤 샘플링
-        movies.extend(random_movies)
-
-    return movies
+    return combined_movies
 
 
-
-
-'''
-장르 기반 영화 추천
-'''
-@api_view(["GET"])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def recommend_by_genre(request):
+def recommend_movies(request):
     user = request.user
-    print(f'user={user}')
 
-    # 사용자 선호 상위 장르 계산
-    top_genres = get_top_genres(user)
+    # 추천 결과 가져오기
+    recommended_movies = get_combined_recommendations(user)
 
-    # 장르별 영화 추출
-    recommended_movies = get_movies_by_genres(user, top_genres)
+    # 결과 직렬화 및 반환
+    serializer = MovieListSerializer(recommended_movies, many=True)
+    return Response(serializer.data)
 
-    response = [
-        {
-            "id": movie.id,
-            "title": movie.title,
-            "poster_path": movie.poster_path,
-        }
-        for movie in recommended_movies
-    ]
-    return Response(response)
-
-
-#--------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------
 
 '''
 영화진흥위원회 API를 활용하여 일일 박스오피스 순위 반환

@@ -17,12 +17,11 @@ urlpatterns = [
     path('movies/autocomplete/', views.movie_autocomplete),                             # 자동 완성 검색  
 
     path('movies/sample/', views.sample_movies),
-    # path('movies/sample/', views.sample_movies),                                      # 회원가입 시 선택할 샘플 영화 반환
     path('movies/box-office/', views.box_office),                                       # 박스 오피스 영화 반환
     path('movies/search/', MovieSearchListView.as_view()),                              # 영화 제목에 대해 검색 결과 반환
     path('movies', MovieFilteringListView.as_view()),                                   # 장르별, 국가별 영화 필터링
 
-    path('recommend/genres/', views.recommend_by_genre),                                 # 장르 기반 영화 추천 
+    path('recommend/', views.recommend_movies),                                         # 영화 추천 알고리즘
 
     path('profile-image/', views.update_profile_image),                                 # 회원 이미지 변경 
     path('user-page/<str:username>/', views.user_page),                                 # 회원 페이지 
