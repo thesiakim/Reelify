@@ -1,6 +1,7 @@
 <template>
-  <div class="container">
+  <div class="container mt-3">
     <h1>👑명예의 전당👑</h1>
+    <p>어제의 박스오피스 순위! 지금 만나보세요.</p>
     <div class="topMovie">
       <div class="image-slider">
         <Transition name="fade" mode="out-in">
@@ -75,14 +76,14 @@ watch(topMovieList, (newList) => {
   justify-content: center;
 
   align-items: center;
-  margin-top: 10vh;
+  margin-top: 8vh;
 }
 
 .image-slider {
   position: relative;
   width: 80%;
-  max-width: 300px;
-  height: 50vh;
+  max-width: 400px;
+  aspect-ratio: 2 / 3; 
   margin: 0 auto;
   overflow: hidden;
 }
