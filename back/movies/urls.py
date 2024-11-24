@@ -31,4 +31,5 @@ urlpatterns = [
     path('user/<str:username>/is_follow/', views.is_follow),                            # 유저페이지 주인 팔로우 여부 확인
     path('user-page/<str:username>/follow-check/', views.follow_check),                 # 유저 페이지 주인의 팔로우, 팔로잉 목록 확인
     path('user/delete/', views.delete),                                                 # 회원 탈퇴 
+    path('email-verification/', views.send_verification_code),
 ]

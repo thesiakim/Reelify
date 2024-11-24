@@ -1,15 +1,27 @@
 from dj_rest_auth.registration.serializers import RegisterSerializer
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from movies.models import Movie, Review
+from django.core.cache import cache
 from django.db import transaction
+
+User = get_user_model()
 
 # 회원 가입 시 사용할 custom serializer
 class CustomRegisterSerializer(RegisterSerializer):
+    email = serializers.EmailField(required=True)
+    verification_code = serializers.CharField(required=True)
     selectedMovies = serializers.ListField(
         child=serializers.IntegerField(),
         required=True,
         help_text="10개의 영화 선택 필수"
     )
+
+    def validate_email(self, email):
+        email = email.lower()
+        if User.objects.filter(email=email).exists():
+            raise serializers.ValidationError("이미 사용 중인 이메일입니다.")
+        return email
 
     def validate_selectedMovies(self, value):
         # 영화 중복 체크
@@ -21,6 +33,17 @@ class CustomRegisterSerializer(RegisterSerializer):
             raise serializers.ValidationError("10개의 영화를 선택해야 합니다.")
         
         return value
+    
+    def validate(self, data):
+        # 이메일 인증번호 검증
+        email = data.get("email")
+        input_code = data.get("verification_code")
+        cached_code = cache.get(email)
+
+        if not cached_code or str(cached_code) != input_code:
+            raise serializers.ValidationError({"verification_code": "인증번호가 일치하지 않습니다."})
+
+        return data
 
     def save(self, request):
         user = super().save(request)

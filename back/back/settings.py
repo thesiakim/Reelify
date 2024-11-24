@@ -171,6 +171,7 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, '.env'))
 TMDB_API_KEY = env('TMDB_API_KEY')
 KOFIC_API_KEY = env('KOFIC_API_KEY')
 TMDB_ACCESS_TOKEN = env('TMDB_ACCESS_TOKEN')
+EMAIL_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 # 캐시 설정
 CACHES = {
@@ -195,3 +196,14 @@ if DEBUG:
     # DEBUG_TOOLBAR_CONFIG = {
     #     'INTERCEPT_REDIRECTS': False,
     # }
+
+
+# 이메일 인증
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# SMTP 서버 정보
+EMAIL_HOST = 'smtp.gmail.com'       # Gmail SMTP 서버 
+EMAIL_PORT = 587                    # Gmail SMTP 포트
+EMAIL_USE_TLS = True                # TLS 암호화 사용
+EMAIL_HOST_USER = 's20230404@gmail.com'  # 발신 이메일 주소
+EMAIL_HOST_PASSWORD = EMAIL_PASSWORD  # 이메일 계정 비밀번호
