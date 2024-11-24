@@ -78,7 +78,7 @@
         <hr />
         <div class="review-top d-flex flex-row mb-4">
           <h2>리뷰</h2>
-          <button class="create-btn" @click="goToReviewForm">
+          <button v-if="store.isLogin === true" class="create-btn click-btn" @click="goToReviewForm">
             리뷰 작성하기
           </button>
         </div>
@@ -88,9 +88,9 @@
         <div v-if="movieData.top_reviews && movieData.top_reviews.length > 0">
           <div
             class="d-flex justify-content-end"
-            v-if="movieData.has_more_reviews"
+            v-if="movieData.has_more_reviews && movieData.id && reviewCnt != null"
           >
-            <button class="mb-4" @click="goToReviewList">전체 리뷰 보기</button>
+            <button class="mb-4 click-btn" @click="goToReviewList">전체 리뷰 보기 +{{ reviewCnt }}</button>
           </div>
           <div class="review-container">
             <ReviewCard
@@ -275,6 +275,9 @@ const likeMovie = async () => {
   }
 };
 
+const reviewCnt = ref(null)
+
+
 // props 변화 또는 초기 렌더링 시 데이터 로드
 watch(
   () => props.movieData,
@@ -283,16 +286,43 @@ watch(
       movieId.value = newMovieData.id;
       likes_count.value = newMovieData.likes_count;
       fetchMovieLikeStatus(); // 추천 여부 확인
+      axios({
+      method: 'get',
+      url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
+      })
+        .then((res) => {
+          console.log(res.data)
+          reviewCnt.value = res.data.reviews.count
+          console.log(reviewCnt.value)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   },
   { immediate: true } 
 );
+
+
 
 onMounted(() => {
   if (props.movieData && props.movieData.id) {
     movieId.value = props.movieData.id;
     likes_count.value = props.movieData.likes_count;
     fetchMovieLikeStatus(); // 추천 여부 확인
+
+    axios({
+    method: 'get',
+    url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
+    })
+      .then((res) => {
+        console.log(res.data)
+        reviewCnt.value = res.data.reviews.count
+        console.log(reviewCnt.value)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 });
 
@@ -446,8 +476,10 @@ onMounted(() => {
   if (props.movieData && props.movieData.id) {
     movieId.value = props.movieData.id;
     loadRatingData();
+    }
   }
-});
+);
+
 </script>
 
 <style scoped>
@@ -651,4 +683,13 @@ onMounted(() => {
   margin-top: 20px; /* 상단 간격 */
   padding: 10px; /* 내부 여백 */
 }
+
+/* 버튼 스타일 */
+.click-btn {
+  color: white;
+  background-color: #a1eebd;
+  border-color: transparent;
+  border-radius: 8px;
+}
+
 </style>
