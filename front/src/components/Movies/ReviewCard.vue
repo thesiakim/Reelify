@@ -33,8 +33,8 @@
         <div class="review-footer">
           <p class="review-date">🕒 {{ new Date(review.created_at).toLocaleString() }}</p>
           <button class="btn btn-primary review-btn" @click="openReviewDetail">댓글 보기</button>
-          <button v-if="store.userName === review.user.username" class="btn btn-primary review-btn" @click="updateReview">수정</button>
-          <button v-if="store.userName === review.user.username" class="btn btn-primary review-btn" @click="deleteReview">삭제</button>
+          <button v-if="store.userName === review.user.username" class="btn review-btn" @click="updateReview">수정</button>
+          <button v-if="store.userName === review.user.username" class="btn review-btn" @click="deleteReview">삭제</button>
         </div>
       </div>
     </div>

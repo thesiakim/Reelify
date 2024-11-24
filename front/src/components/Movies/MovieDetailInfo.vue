@@ -96,8 +96,8 @@
             />
           </div>
         </div>
-        <div v-else class="text-center">
-          <h1>리뷰가 없어요! 리뷰를 달아주세용🥺</h1>
+        <div v-else class="text-center mt-4">
+          <h2>리뷰가 없어요! 리뷰를 달아주세용🥺</h2>
         </div>
       </div>
       <!-- 유튜브 -->
@@ -189,11 +189,11 @@ const showAlert = ref(false);
 const alertMessage = ref("");
 
 const goToReviewForm = () => {
-  router.push({ name: "ReviewCreateView", params: { movie_id: movieId } });
+  router.push({ name: "ReviewCreateView", params: { movie_id: movieId.value } });
 };
 
 const goToReviewList = () => {
-  router.push({ name: "ReviewListView", params: { movieId: movieId } });
+  router.push({ name: "ReviewListView", params: { movieId: movieId.value } });
 };
 
 watch(

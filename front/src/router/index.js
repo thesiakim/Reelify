@@ -81,18 +81,16 @@ const router = createRouter({
       path: "/user-page/:username",
       name: "UserPageView",
       component: UserPageView,
-      children: [
-        {
-          path: "user-review-list",
-          name: "UserReviewListView",
-          component: UserReviewListView,
-        },
-        {
-          path: "user-follow",
-          name: "UserFollowView",
-          component: UserFollowView,
-        },
-      ],
+    },
+    {
+      path: "/:username/user-review-list",
+      name: "UserReviewListView",
+      component: UserReviewListView,
+    },
+    {
+      path: "/:username/user-follow",
+      name: "UserFollowView",
+      component: UserFollowView,
     },
   ],
   scrollBehavior (to, from, savedPosition) {
