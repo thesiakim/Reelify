@@ -138,7 +138,7 @@ const getPosterPath = (path) => {
 
 .movie-card.selected {
   border: 2px solid #fba1b7; 
-  /* background-color: #fff0f5;  */
+  background-color: #fff0f5; 
 }
 .movie-card:hover {
   transform: scale(1.05);

@@ -357,6 +357,8 @@ const logOut = function () {
 }
 .text-light {
   color: white !important;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* 검은색 그림자 */
 }
 .text-dark {
   color: black !important;

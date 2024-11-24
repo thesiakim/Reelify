@@ -13,6 +13,7 @@ import MovieLegendaryView from "@/views/Movies/MovieLegendaryView.vue";
 import UserPageView from "@/views/Community/UserPageView.vue";
 import UserReviewListView from "@/views/Community/UserReviewListView.vue";
 import UserFollowView from "@/views/Community/UserFollowView.vue";
+import UserLikeReviewView from "@/views/Community/UserLikeReviewView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,6 +82,7 @@ const router = createRouter({
       path: "/user-page/:username",
       name: "UserPageView",
       component: UserPageView,
+      props: true,
     },
     {
       path: "/:username/user-review-list",
@@ -91,6 +93,11 @@ const router = createRouter({
       path: "/:username/user-follow",
       name: "UserFollowView",
       component: UserFollowView,
+    },
+    {
+      path: "/:username/user-like-review",
+      name: "UserLikeReviewView",
+      component: UserLikeReviewView
     },
   ],
   scrollBehavior (to, from, savedPosition) {

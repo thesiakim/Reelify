@@ -1,5 +1,5 @@
 <template>
-  <div class="signup-container mt-5 d-flex justify-content-center">
+  <div class="signup-container my-5 d-flex justify-content-center">
     <div class="signup-box">
       <h1 class="signup-title">회원가입</h1>
       <form @submit.prevent="validateSignUp">
@@ -40,7 +40,7 @@
         </div>
 
         <div class="form-group">
-          <label>좋아하시는 장르를 선택하세요</label>
+          <label>좋아하는 장르를 선택하세요</label>
           <p v-if="movieError" class="text-danger">{{ movieError }}</p>
           <p v-else class="text-custom">현재 선택한 영화는 {{ selectedMovies.length }}개 입니다.</p>
           <div class="genre-button-container">

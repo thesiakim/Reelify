@@ -17,7 +17,7 @@
       />
       <div class="detail-content">
         <div>
-          <h1 class="movie-title">{{ movieTitle }}</h1>
+          <div class="movie-title">{{ movieTitle }}</div>
           <div class="movie-origin-tit">{{ movieOriginTitle }}</div>
           <div class="movie-det">
             <div>{{ movieRelease }}</div>
@@ -129,6 +129,11 @@ onMounted(() => {
   top: 0;
   left: 0;
   overflow: hidden;
+  /* 백드롭 이미지를 어둡게 만들어 대비 강조 */
+  /* width: 100%;
+  display: block;
+  mix-blend-mode: multiply; 
+  filter: brightness(80%); */
 }
 .detail-content {
   align-items: end;
@@ -143,6 +148,7 @@ onMounted(() => {
   right: 0px;
   margin-right: 8vw;
   margin-left: 8vw;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* 검은색 그림자 */
 }
 .genres {
   margin-right: 10px;
@@ -152,7 +158,7 @@ onMounted(() => {
 }
 .movie-title {
   font-weight: bold;
-  font-size: 2rem;
+  font-size: 3rem;
 }
 .movie-origin-tit {
   font-weight: bold;

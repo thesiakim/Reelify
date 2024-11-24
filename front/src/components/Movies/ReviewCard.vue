@@ -3,7 +3,8 @@
     <div class="card-body">
       <!-- 왼쪽: 프로필 사진 및 유저 이름 -->
       <div class="user-section">
-        <img @click="goToUserPage(review.user.username)" :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
+        <img v-if="store.isLogin === true" @click="goToUserPage(review.user.username)" :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
+        <img v-else :src="review.user.profile_img" alt="프로필 이미지" class="user-profile-img" />
         <p class="user-username">{{ review.user.username }}</p>
       </div>
 
