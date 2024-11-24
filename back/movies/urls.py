@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('movies/reviews/<int:review_pk>/comments/', ReviewCommentListView.as_view()),  # 특정 리뷰의 댓글, 대댓글 반환
+    path('movies/<int:movie_pk>/rating/', views.movie_graph),
     path('movies/<int:movie_pk>/like/', views.movie_like_toggle),                       # 특정 영화 추천, 추천 취소
     path('movies/<int:movie_pk>/create-review/', views.create_review),                  # 특정 영화에 리뷰 작성
     path('movies/<int:movie_pk>/reviews/', ReviewListView.as_view()),                   # 특정 영화의 리뷰 목록 반환
