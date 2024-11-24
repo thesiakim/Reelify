@@ -571,7 +571,7 @@
         "model": "movies.provider",
         "pk": 149,
         "fields": {
-            "name": "Movistar Plus+",
+            "name": "Movistar Plus+ Ficción Total ",
             "logo_path": "/f6TRLB3H4jDpFEZ0z2KWSSvu1SB.jpg"
         }
     },
@@ -4563,7 +4563,7 @@
         "model": "movies.provider",
         "pk": 2241,
         "fields": {
-            "name": "Movistar Plus+ €9.99",
+            "name": "Movistar Plus+",
             "logo_path": "/jse4MOi92Jgetym7nbXFZZBI6LK.jpg"
         }
     },

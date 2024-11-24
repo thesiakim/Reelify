@@ -78,7 +78,7 @@ def save_data():
     # 영화 리스트 조회 + 영화 디테일 + 배우 + 감독 + 배급사 + 장르 
     movie_list_url = 'movie/popular'
 
-    for i in range(1, 151):
+    for i in range(1, 171):
         movie_list_params = {
             'language':'ko-KR',
             'region': 'KR',
@@ -194,9 +194,10 @@ def save_data():
                     director_id = credit.get('id')
                     director_name = credit.get('name')
                     director_profile_path = credit.get('profile_path')
+                    director_popularity = credit.get('popularity')
 
                     # 감독 데이터 존재 여부 확인
-                    if not all([director_id, director_name, director_profile_path]):
+                    if not all([director_id, director_name, director_profile_path, director_popularity]):
                         print('영화 상세 조회 : directors 데이터 없음')
                         continue
 
@@ -206,7 +207,8 @@ def save_data():
                         "pk": director_id,
                         "fields": {
                             "name": director_name,
-                            'profile_path': director_profile_path
+                            'profile_path': director_profile_path,
+                            'popularity': director_popularity
                         }
                     }
                     director_db.append(data)

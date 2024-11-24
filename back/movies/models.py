@@ -1,6 +1,6 @@
 from django.db import models
+from django.core.cache import cache
 from django.contrib.auth import get_user_model
-from .utils import invalidate_user_cache
 
 User = get_user_model()
 
@@ -26,6 +26,7 @@ class Actor(models.Model):
 class Director(models.Model):
     id = models.IntegerField(primary_key=True)   # 편의를 위해 API가 제공하는 id값을 PK로 사용
     name = models.CharField(max_length=50)
+    popularity = models.FloatField()  
     profile_path = models.TextField()            # 프로필 이미지 주소
 
 
@@ -73,28 +74,39 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
     # 동일 영화에 중복하여 리뷰 작성 불가능 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['user', 'movie'], name='unique_user_movie_review')
         ]
     
-    # 캐시 무효화 실행 
+    '''
+    추천 알고리즘을 위해 캐시 무효화 조건 설정
+    - 새로 리뷰를 작성한 경우, 기존 리뷰를 삭제한 경우, 기존 리뷰 수정 시 rating만 수정한 경우
+    '''
     def save(self, *args, **kwargs):
-        # 기존 객체의 경우 rating이 변경되었을 때 캐시 무효화
-        if self.pk:  
-            old_instance = Review.objects.get(pk=self.pk)
-            if old_instance.rating != self.rating:
-                invalidate_user_cache(self.user.id)
-        # 새 객체일 경우 캐시 무효화
-        else:  
-            invalidate_user_cache(self.user.id)
+        is_new = self.pk is None
+        old_rating = None
+
+        if not is_new:  
+            original = Review.objects.get(pk=self.pk)
+            old_rating = original.rating
 
         super().save(*args, **kwargs)
 
+        if is_new or (old_rating is not None and old_rating != self.rating):
+            cache_key = f"user_{self.user.id}_recommendations"
+            cache.delete(cache_key)
+
+    def delete(self, *args, **kwargs):
+        cache_key = f"user_{self.user.id}_recommendations"
+        cache.delete(cache_key)
+        super().delete(*args, **kwargs)
+
+        
 # 리뷰에 대한 코멘트
 class Comment(models.Model):
-    likes = models.ManyToManyField(User, related_name='like_comments', blank=True)    # 댓글 추천
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     review = models.ForeignKey(Review, on_delete=models.CASCADE)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies', null=True, blank=True)
