@@ -154,6 +154,7 @@ const handleKeydown = (event) => {
 const logOut = function () {
   console.log("로그아웃 되었습니다.");
   store.logOut();
+  router.push({name:'HomeView'})
 };
 </script>
 

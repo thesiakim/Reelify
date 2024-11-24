@@ -1,5 +1,5 @@
 <template>
-  <div v-if="userData" class="container">
+  <div v-if="userData" class="container my-5">
     <h1 class="text-center mt-3">{{ userData.username }}의 영화 취향</h1>
     <div
       class="user-profile d-flex flex-row justify-content-between align-items-center"
@@ -10,12 +10,12 @@
         alt="profile_img"
       />
       <div class="profile-text text-center">
-        <h3>{{ userData.username }}</h3>
-        <p class="follow-text">
-          팔로우&ensp;{{ userData.followers_count }} &ensp;&ensp; 팔로잉&ensp;{{
-            userData.followings_count
-          }}
-        </p>
+        <h3 class="mb-4">{{ userData.username }}</h3>
+        <div class="follow-text d-flex flex-row mx-2">
+          <p @click="goToUserFollower(userData.username)">
+            팔로우&ensp;{{ userData.followers_count }}&ensp;</p>
+          <p @click="goToUserFollowing(userData.username)">&ensp;팔로잉&ensp;{{userData.followings_count}}</p>
+        </div>
       </div>
       <div
         v-if="
@@ -42,7 +42,7 @@
           store.isLogin === true && store.userName === userData.username
         "
       >
-        <button class="update-btn">내 정보 수정</button>
+        <button class="update-btn" @click="goToUpdate(store.userName)">내 정보 수정</button>
       </div>
     </div>
 
@@ -65,7 +65,7 @@
         <div class="text-center">
           <p>추천한 리뷰 수</p>
           <span class="likeReview-cnt" v-if="likeReviewCnt > 3" @click="goToUserLikeReview(userData.username)">{{ likeReviewCnt }}</span>
-          <span v-else>{{ writeReviewCnt }}</span>
+          <span v-else>{{ likeReviewCnt }}</span>
         </div>
       </div>
       <hr />
@@ -96,8 +96,11 @@
       <div class="d-flex justify-content-end" v-if="userData && userData.liked_reviews && userData.liked_reviews.length > 3">
         <button @click="goToUserLikeReview(userData.username)">전체 리뷰 / 댓글 보기</button>
       </div>
-      <div class="mt-4 d-flex flex-column align-items-center">
+      <div class="mt-4 d-flex flex-column align-items-center" v-if="userData && userData.liked_reviews &&  userData.liked_reviews.length > 0">
         <UserLikeReview class="mb-4" v-for="review in limitedLikeReviews" :key="review.id" :review="review"/>
+      </div>
+      <div v-else-if="userData && userData.liked_reviews && userData.liked_reviews.length === 0">
+        <h3 class="text-center my-3">아직 추천한 리뷰가 없어요😯</h3>
       </div>
       
     </div>
@@ -253,6 +256,21 @@ const goToUserReviewList = function (username) {
 const goToUserLikeReview = function (username) {
   router.push({ name: "UserLikeReviewView", params: { username: username }})
 }
+
+// 팔로워 목록 확인 페이지 이동 함수
+const goToUserFollower = function (username) {
+  router.push({ name: 'UserFollowerView', params: { username: username }})
+
+}
+// 팔로잉 목록 확인 페이지 이동 함수
+const goToUserFollowing = function (username) {
+  router.push({ name: 'UserFollowingView', params: { username: username }})
+}
+
+// 내 정보 수정 페이지 이동 함수
+const goToUpdate = function (username) {
+  router.push({name: 'UserUpdateView', params: {username: username}})
+}
 </script>
 
 <style scoped>
@@ -276,6 +294,7 @@ const goToUserLikeReview = function (username) {
 }
 .follow-text {
   font-size: 20px;
+  cursor: pointer
 }
 .update-btn {
   display: flex;
@@ -288,9 +307,17 @@ const goToUserLikeReview = function (username) {
 }
 .review-cnt {
   cursor: pointer;
+  border-radius: 2px;
+}
+.review-cnt:hover {
+  background-color: #a1eebd
 }
 .likeReview-cnt {
   cursor: pointer;
+  border-radius: 2px;
+}
+.likeReview-cnt:hover {
+  background-color: #a1eebd
 }
 @media (max-width: 768px) {
   .profile-text {

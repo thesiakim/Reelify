@@ -12,8 +12,10 @@ import MovieRecommendedView from "@/views/Movies/MovieRecommendedView.vue";
 import MovieLegendaryView from "@/views/Movies/MovieLegendaryView.vue";
 import UserPageView from "@/views/Community/UserPageView.vue";
 import UserReviewListView from "@/views/Community/UserReviewListView.vue";
-import UserFollowView from "@/views/Community/UserFollowView.vue";
 import UserLikeReviewView from "@/views/Community/UserLikeReviewView.vue";
+import UserFollowerView from "@/views/Community/UserFollowerView.vue";
+import UserFollowingView from "@/views/Community/UserFollowingView.vue";
+import UserUpdateView from "@/views/Community/UserUpdateView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -90,15 +92,25 @@ const router = createRouter({
       component: UserReviewListView,
     },
     {
-      path: "/:username/user-follow",
-      name: "UserFollowView",
-      component: UserFollowView,
+      path: "/:username/user-follower",
+      name: "UserFollowerView",
+      component: UserFollowerView,
+    },
+    {
+      path: "/:username/user-following",
+      name: "UserFollowingView",
+      component: UserFollowingView
     },
     {
       path: "/:username/user-like-review",
       name: "UserLikeReviewView",
       component: UserLikeReviewView
     },
+    {
+      path:"/:username/user-update",
+      name: "UserUpdateView",
+      component: UserUpdateView
+    }
   ],
   scrollBehavior (to, from, savedPosition) {
     return { top: 0 }
