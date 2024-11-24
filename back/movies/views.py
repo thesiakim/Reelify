@@ -218,6 +218,32 @@ def recommend_movies(request):
 #-------------------------------------------------------------------------------------------------------------
 
 '''
+영화 별점 분포도 계산
+'''
+@api_view(['GET'])
+def movie_graph(request, movie_pk):
+    try:
+        movie = Movie.objects.get(pk=movie_pk)
+        reviews = Review.objects.filter(movie=movie)
+        
+        # 별점 분포 계산 (0.5 단위)
+        ratings = [0] * 11  # 0.0 ~ 5.0까지 0.5 단위로
+        for review in reviews:
+            index = int(review.rating * 2)  # 0.5 단위별로 index 계산
+            ratings[index] += 1
+
+        distribution = {
+            "labels": [f"{i / 2:.1f}" for i in range(11)], 
+            "counts": ratings,
+        }
+        print(distribution)
+        return Response(distribution, status=status.HTTP_200_OK)
+    except Movie.DoesNotExist:
+        return Response({"message": "존재하지 않는 영화입니다!"}, status=status.HTTP_404_NOT_FOUND)
+
+#-------------------------------------------------------------------------------------------------------------
+
+'''
 영화진흥위원회 API를 활용하여 일일 박스오피스 순위 반환
 포스터 url을 얻기 위해 TMDB API와 매치하여 영화 제목에 특수문자가 있는 경우 제거한 뒤 개봉일과 가장 근접한 영화 데이터 필터링
 '''
@@ -824,3 +850,4 @@ def movie_graph(request, movie_pk):
         return Response(distribution, status=status.HTTP_200_OK)
     except Movie.DoesNotExist:
         return Response({"message": "존재하지 않는 영화입니다!"}, status=status.HTTP_404_NOT_FOUND)
+

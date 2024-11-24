@@ -472,15 +472,13 @@ watch(
   { immediate: true }
 );
 
-
 onMounted(() => {
   if (props.movieData && props.movieData.id) {
     movieId.value = props.movieData.id;
     loadRatingData();
     }
   }
-)
-
+);
 
 </script>
 
@@ -685,6 +683,7 @@ onMounted(() => {
   margin-top: 20px; /* 상단 간격 */
   padding: 10px; /* 내부 여백 */
 }
+
 /* 버튼 스타일 */
 .click-btn {
   color: white;
@@ -692,4 +691,5 @@ onMounted(() => {
   border-color: transparent;
   border-radius: 8px;
 }
+
 </style>
