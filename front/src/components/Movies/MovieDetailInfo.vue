@@ -2,31 +2,36 @@
   <div class="container">
     <div class="detail-intro">
       <div class="d-flex flex-row">
-        <div class="movie-detail-img">
-          <img
-            class="moviePoster"
-            :src="store.getPosterPath(movieData.poster_path)"
-            alt="moviePoster"
-          />
-        </div>
-        <div
-          class="movie-detail-content d-flex flex-column justify-content-center"
-        >
-          <!-- 영화 추천 -->
-          <div class="like-container" @click="likeMovie">
-            <div class="like-heart">
-              <span class="like-text">{{ isMovieLiked ? '💗' : '🖤' }}</span>
-            </div>
-            <div class="like-message">
-              총 <span class="likes-count">{{ likes_count }}</span>명이 추천했어요!
-            </div>
-          </div>
-          <div>{{ movieData.overview }}</div>
-          <div class="movie-tagline gradient-text">
-            "{{ movieData.tagline }}"
-          </div>
-        </div>
+  <div class="movie-detail-img">
+    <img
+      class="moviePoster"
+      :src="store.getPosterPath(movieData.poster_path)"
+      alt="moviePoster"
+    />
+    <!-- 별점 분포 그래프 -->
+    <div class="rating-graph-container">
+      <p class="rating-graph-text">별점 그래프</p>
+      <canvas id="ratingChart"></canvas>
+    </div>
+    </div>
+  <div
+    class="movie-detail-content d-flex flex-column justify-content-center"
+  >
+    <!-- 영화 추천 -->
+    <div class="like-container" @click="likeMovie">
+      <div class="like-heart">
+        <span class="like-text">{{ isMovieLiked ? '💗' : '🖤' }}</span>
       </div>
+      <div class="like-message">
+        총 <span class="likes-count">{{ likes_count }}</span>명이 추천했어요!
+      </div>
+    </div>
+    <div>{{ movieData.overview }}</div>
+    <div class="movie-tagline gradient-text">
+      "{{ movieData.tagline }}"
+    </div>
+  </div>
+</div>
       <!-- 출연진 소개 -->
       <div class="mt-5">
         <hr />
@@ -73,7 +78,7 @@
         <hr />
         <div class="review-top d-flex flex-row mb-4">
           <h2>리뷰</h2>
-          <button class="create-btn" @click="goToReviewForm">
+          <button v-if="store.isLogin === true" class="create-btn click-btn" @click="goToReviewForm">
             리뷰 작성하기
           </button>
         </div>
@@ -83,9 +88,9 @@
         <div v-if="movieData.top_reviews && movieData.top_reviews.length > 0">
           <div
             class="d-flex justify-content-end"
-            v-if="movieData.has_more_reviews"
+            v-if="movieData.has_more_reviews && movieData.id && reviewCnt != null"
           >
-            <button class="mb-4" @click="goToReviewList">전체 리뷰 보기</button>
+            <button class="mb-4 click-btn" @click="goToReviewList">전체 리뷰 보기 +{{ reviewCnt }}</button>
           </div>
           <div class="review-container">
             <ReviewCard
@@ -164,6 +169,7 @@ import { useAccountStore } from "@/stores/accounts";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/vue";
+import Chart from "chart.js/auto";
 import "swiper/css"
 import "swiper/css/scrollbar"
 import "swiper/swiper-bundle.css";
@@ -269,6 +275,9 @@ const likeMovie = async () => {
   }
 };
 
+const reviewCnt = ref(null)
+
+
 // props 변화 또는 초기 렌더링 시 데이터 로드
 watch(
   () => props.movieData,
@@ -277,18 +286,202 @@ watch(
       movieId.value = newMovieData.id;
       likes_count.value = newMovieData.likes_count;
       fetchMovieLikeStatus(); // 추천 여부 확인
+      axios({
+      method: 'get',
+      url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
+      })
+        .then((res) => {
+          console.log(res.data)
+          reviewCnt.value = res.data.reviews.count
+          console.log(reviewCnt.value)
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   },
   { immediate: true } 
 );
+
+
 
 onMounted(() => {
   if (props.movieData && props.movieData.id) {
     movieId.value = props.movieData.id;
     likes_count.value = props.movieData.likes_count;
     fetchMovieLikeStatus(); // 추천 여부 확인
+
+    axios({
+    method: 'get',
+    url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
+    })
+      .then((res) => {
+        console.log(res.data)
+        reviewCnt.value = res.data.reviews.count
+        console.log(reviewCnt.value)
+      })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 });
+
+const chart = ref(null);
+
+// 별점 데이터 불러오기 및 그래프 생성
+const loadRatingData = async () => {
+  try {
+    const response = await axios.get(
+      `${store.API_URL}/api/v1/movies/${movieId.value}/rating/`
+    );
+    const data = response.data;
+
+    const ctx = document.getElementById("ratingChart").getContext("2d");
+    if (!ctx) {
+      console.error("Canvas 요소를 찾을 수 없습니다.");
+      return;
+    }
+
+    if (chart.value) {
+      chart.value.destroy();
+    }
+
+    const maxValue = Math.max(...data.counts);
+    const maxIndex = data.counts.indexOf(maxValue);
+    const maxLabel = data.labels[maxIndex];
+
+    chart.value = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            label: "별점 분포",
+            data: data.counts,
+            backgroundColor: (context) => {
+              const index = context.dataIndex;
+              return index === maxIndex
+                ? "rgba(255, 99, 132, 0.8)"
+                : "rgba(255, 159, 64, 0.4)";
+            },
+            hoverBackgroundColor: "rgba(255, 99, 132, 0.9)",
+            borderRadius: 10,
+            barThickness: 20,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
+        layout: {
+          padding: {
+            left: 20,   // 좌측 여백
+            right: 40,  // 우측 여백
+            top: 20,    // 상단 여백
+            bottom: 10  // 하단 여백
+          }
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              label: function (tooltipItem) {
+                return `${tooltipItem.raw}명`;
+              },
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              display: false,
+            },
+            title: {
+              display: false,
+            }
+          },
+          y: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              display: false,
+            },
+            title: {
+              display: false,
+            },
+            border: {  // 이 부분을 추가
+              display: false
+            },
+            suggestedMax: maxValue + (maxValue * 0.2),
+            suggestedMin: 0
+          },
+        }
+              },
+      plugins: [
+        {
+          id: "customMaxLabel",
+          afterDraw: (chart) => {
+            const { ctx } = chart;
+            const dataset = chart.data.datasets[0];
+            const meta = chart.getDatasetMeta(0);
+            
+            const maxValue = Math.max(...dataset.data);
+            const maxIndex = dataset.data.indexOf(maxValue);
+            const maxLabel = chart.data.labels[maxIndex];
+            
+            const bar = meta.data[maxIndex];
+            const x = bar.x;
+            const y = bar.y;
+            
+            ctx.save();
+            ctx.fillStyle = "rgba(255, 99, 132, 1)";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            
+            ctx.fillText(`${maxLabel}⭐`, x, y - 10);
+            ctx.restore();
+          }
+        }
+      ]
+    });
+  } catch (error) {
+    console.error("별점 데이터를 불러오는 중 오류:", error);
+  }
+};
+
+
+
+
+// movieData 변경 감지 및 데이터 로드
+watch(
+  () => props.movieData,
+  (newMovieData) => {
+    if (newMovieData && newMovieData.id) {
+      movieId.value = newMovieData.id;
+      loadRatingData();
+    }
+  },
+  { immediate: true }
+);
+
+
+onMounted(() => {
+  if (props.movieData && props.movieData.id) {
+    movieId.value = props.movieData.id;
+    loadRatingData();
+    }
+  }
+)
+
+
 </script>
 
 <style scoped>
@@ -474,4 +667,29 @@ onMounted(() => {
   transform: scale(1.2);      /* 드래그 버튼 확대 효과 */
 }
 
+/* 그래프 텍스트 스타일 */
+.rating-graph-text {
+  font-size: 1rem; /* 적당한 텍스트 크기 */
+  font-weight: normal; /* 기본 폰트 굵기 */
+  text-align: center; /* 중앙 정렬 */
+  color: #888; /* 회색 텍스트 색상 */
+  margin-bottom: 10px; /* 그래프와의 간격 */
+}
+
+/* 그래프와 텍스트 컨테이너 */
+.rating-graph-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 가로로 중앙 정렬 */
+  justify-content: center; /* 세로로 중앙 정렬 */
+  margin-top: 20px; /* 상단 간격 */
+  padding: 10px; /* 내부 여백 */
+}
+/* 버튼 스타일 */
+.click-btn {
+  color: white;
+  background-color: #a1eebd;
+  border-color: transparent;
+  border-radius: 8px;
+}
 </style>

@@ -5,7 +5,6 @@
       class="user-profile d-flex flex-row justify-content-between align-items-center"
     >
       <img
-        @click="goToUserPage(review.user.username)"
         :src="`${store.API_URL}${userData.profile_img}`"
         class="user-img"
         alt="profile_img"
@@ -58,11 +57,15 @@
         </div>
         <div class="text-center">
           <p>작성한 리뷰 수</p>
-          <span>{{ writeReviewCnt }}</span>
+          <span class="review-cnt" v-if="writeReviewCnt > 3" @click="goToUserReviewList(userData.username)">
+            {{ writeReviewCnt }}
+          </span>
+          <span v-else>{{ writeReviewCnt }}</span>
         </div>
         <div class="text-center">
           <p>추천한 리뷰 수</p>
-          <span>{{ likeReviewCnt }}</span>
+          <span class="likeReview-cnt" v-if="likeReviewCnt > 3" @click="goToUserLikeReview(userData.username)">{{ likeReviewCnt }}</span>
+          <span v-else>{{ writeReviewCnt }}</span>
         </div>
       </div>
       <hr />
@@ -78,7 +81,7 @@
     <div>
       <h2>{{ userData.username }}님이 작성한 리뷰</h2>
       <div class="d-flex justify-content-end" v-if="userData && userData.written_reviews && userData.written_reviews.length > 3">
-        <button @click="goToUserReviewList(userData.username)">전체 리뷰 / 댓글 보기</button>
+        <button class="click-btn" @click="goToUserReviewList(userData.username)">전체 리뷰 / 댓글 보기</button>
       </div>
       <div class="mt-4 d-flex flex-column align-items-center">
         <UserReviewCard class="mb-4" v-for="review in limitedReviews" :key="review.id" :review="review"/>
@@ -91,10 +94,10 @@
     <div>
       <h2>{{ userData.username }}님이 추천한 리뷰</h2>
       <div class="d-flex justify-content-end" v-if="userData && userData.liked_reviews && userData.liked_reviews.length > 3">
-        <button @click="goToUserReviewList(userData.username)">전체 리뷰 / 댓글 보기</button>
+        <button @click="goToUserLikeReview(userData.username)">전체 리뷰 / 댓글 보기</button>
       </div>
       <div class="mt-4 d-flex flex-column align-items-center">
-        <UserReviewCard class="mb-4" v-for="review in limitedLikeReviews" :key="review.id" :review="review"/>
+        <UserLikeReview class="mb-4" v-for="review in limitedLikeReviews" :key="review.id" :review="review"/>
       </div>
       
     </div>
@@ -105,15 +108,18 @@
 <script setup>
 import { useAccountStore } from "@/stores/accounts";
 import { useRoute, useRouter } from "vue-router";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import axios from "axios";
 import UserLikeMovie from "@/components/Community/UserLikeMovie.vue";
 import UserReviewCard from "@/components/Community/UserReviewCard.vue";
+import UserLikeReview from "@/components/Community/UserLikeReview.vue";
 import { RouterView } from "vue-router";
 
 const store = useAccountStore();
 const route = useRoute();
 const router = useRouter();
+
+// 새 데이터 정의
 const userData = ref({});
 const likeMovie = ref([]);
 const likeMovieCnt = ref(0);
@@ -123,13 +129,17 @@ const writeReview = ref([]);
 const writeReviewCnt = ref(0);
 console.log(route.params.username);
 
+// const props = defineProps({
+//   username: String
+// })
+
 // 초기에 팔로잉 했는지 안했는지 -> 수정 필요
 const isFollow = ref(null);
 
 const limitedReviews = ref([]);
 const limitedLikeReviews = ref([])
 
-onMounted(() => {
+const loadUserData = (username) => {
   // 유저 정보 조회하는 요청
   axios({
     method: "get",
@@ -177,8 +187,19 @@ onMounted(() => {
       .catch((err) => {
         console.log(err)
       })
-});
+};
 
+// 최초 로드
+onMounted(() => {
+  loadUserData(route.params.username)
+})
+// 라우트 변경 감지
+watch(
+  () => route.params.username,
+  (newUsername) => {
+    loadUserData(newUsername)
+  }
+);
 
 
 // 팔로우 구현
@@ -227,6 +248,11 @@ const goToUserPage = function (username) {
 const goToUserReviewList = function (username) {
   router.push({ name: "UserReviewListView", params: { username: username}})
 }
+
+// 유저가 추천한 리뷰 리스트 페이지 이동 함수
+const goToUserLikeReview = function (username) {
+  router.push({ name: "UserLikeReviewView", params: { username: username }})
+}
 </script>
 
 <style scoped>
@@ -253,6 +279,18 @@ const goToUserReviewList = function (username) {
 }
 .update-btn {
   display: flex;
+}
+.click-btn {
+  color: white;
+  background-color: #a1eebd;
+  border-color: transparent;
+  border-radius: 8px;
+}
+.review-cnt {
+  cursor: pointer;
+}
+.likeReview-cnt {
+  cursor: pointer;
 }
 @media (max-width: 768px) {
   .profile-text {

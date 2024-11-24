@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('movies/reviews/<int:review_pk>/comments/', ReviewCommentListView.as_view()),  # 특정 리뷰의 댓글, 대댓글 반환
+    path('movies/<int:movie_pk>/rating/', views.movie_graph),
     path('movies/<int:movie_pk>/like/', views.movie_like_toggle),                       # 특정 영화 추천, 추천 취소
     path('movies/<int:movie_pk>/create-review/', views.create_review),                  # 특정 영화에 리뷰 작성
     path('movies/<int:movie_pk>/reviews/', ReviewListView.as_view()),                   # 특정 영화의 리뷰 목록 반환
@@ -28,5 +29,6 @@ urlpatterns = [
     path('user/<str:username>/follow/', views.toggle_follow),                           # 팔로우, 언팔로우
     path('user/<int:movie_pk>/is_liked/', views.is_liked),                              # 유저의 영화 추천 여부 확인 (화면 렌더링 시 호출하여 동적으로 아이콘 변경)
     path('user/<str:username>/is_follow/', views.is_follow),                            # 유저페이지 주인 팔로우 여부 확인
+    path('user-page/<str:username>/follow-check/', views.follow_check),                 # 유저 페이지 주인의 팔로우, 팔로잉 목록 확인
     path('user/delete/', views.delete),                                                 # 회원 탈퇴 
 ]

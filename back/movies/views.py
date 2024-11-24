@@ -17,7 +17,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework import status
 
 from movies.models import Movie, Country, Genre, Review, Comment, Actor, Director
-from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer
+from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer,  UserSerializer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 from heapq import nlargest
@@ -777,6 +777,23 @@ def is_follow(request, username):
     is_following = request.user.followings.filter(id=target_user.id).exists()
     return Response({ "is_following": is_following })
 
+# 팔로잉, 팔로워 목록 확인
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def follow_check(request, username):
+    user = get_object_or_404(User, username=username)
+
+    followings = user.followings.all()
+    followers = user.followers.all()
+
+    followings_data = UserSerializer(followings, many=True, context={'request': request}).data
+    followers_data = UserSerializer(followers, many=True, context={'request': request}).data
+
+    return Response({
+        'username': user.username,
+        'followings': followings_data,
+        'followers': followers_data,
+    })
 
 # 회원 탈퇴
 @api_view(['DELETE'])
@@ -784,3 +801,26 @@ def is_follow(request, username):
 def delete(request):
     request.user.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# 영화 별점 분포도 계산
+@api_view(['GET'])
+def movie_graph(request, movie_pk):
+    try:
+        movie = Movie.objects.get(pk=movie_pk)
+        reviews = Review.objects.filter(movie=movie)
+        
+        # 별점 분포 계산 (0.5 단위)
+        ratings = [0] * 11  # 0.0 ~ 5.0까지 0.5 단위로
+        for review in reviews:
+            index = int(review.rating * 2)  # 0.5 단위별로 index 계산
+            ratings[index] += 1
+
+        distribution = {
+            "labels": [f"{i / 2:.1f}" for i in range(11)], 
+            "counts": ratings,
+        }
+        print(distribution)
+        return Response(distribution, status=status.HTTP_200_OK)
+    except Movie.DoesNotExist:
+        return Response({"message": "존재하지 않는 영화입니다!"}, status=status.HTTP_404_NOT_FOUND)
