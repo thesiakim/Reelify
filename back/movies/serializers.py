@@ -211,7 +211,7 @@ class MyPageSerializer(serializers.ModelSerializer):
         return [{'id': comment.id, 'content': comment.content, 'review_id': comment.review.id} for comment in comments]
 
     def get_liked_reviews(self, obj):
-        liked_reviews = obj.like_reviews.select_related('movie')  
+        liked_reviews = obj.like_reviews.select_related('movie', 'user')  # 성능 최적화 : select_related
         return [
             {
                 'id': review.id,
@@ -220,6 +220,11 @@ class MyPageSerializer(serializers.ModelSerializer):
                     'id': review.movie.id,
                     'title': review.movie.title,
                     'poster_path': review.movie.poster_path
+                },
+                'user': {
+                    'id': review.user.id,
+                    'username': review.user.username,
+                    'profile_img': 'http://127.0.0.1:8000'+review.user.profile_img.url 
                 }
             }
             for review in liked_reviews
