@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django.db.models import Avg, Count, Max, Q, Prefetch, FloatField, OuterRef, Subquery, F, ExpressionWrapper, Sum, Value
@@ -875,4 +876,22 @@ def delete(request):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@api_view(['POST'])
+def send_verification_code(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({"error": "이메일을 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # 인증번호 생성 및 저장
+    verification_code = random.randint(100000, 999999)
+    cache.set(email, verification_code, timeout=300)  # 인증번호를 5분간 유효
 
+    # 이메일 발송
+    send_mail(
+        subject="회원가입 인증번호",
+        message=f"안녕하세요, Reelify 입니다. 인증번호 {verification_code}를 입력해주세요!",
+        from_email="s20230404@gmail.com",  
+        recipient_list=[email],
+    )
+
+    return Response({"message": "인증번호가 이메일로 발송되었습니다."}, status=status.HTTP_200_OK)

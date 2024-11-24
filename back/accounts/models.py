@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
+    email = models.EmailField(unique=True)
     followings = models.ManyToManyField('self', symmetrical=False, related_name='followers')
     profile_img = models.ImageField(upload_to='profile-image/',
                                     default='profile-default.png')

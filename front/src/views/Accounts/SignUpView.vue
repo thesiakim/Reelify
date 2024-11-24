@@ -3,6 +3,44 @@
     <div class="signup-box">
       <h1 class="signup-title">회원가입</h1>
       <form @submit.prevent="validateSignUp">
+
+        <!-- 이메일 입력 필드 -->
+        <div class="form-group">
+          <label for="email">이메일</label>
+          <input
+            type="email"
+            id="email"
+            v-model="email"
+            class="form-control"
+            placeholder="이메일을 입력하세요"
+          />
+          <!-- 이메일 에러 메시지 출력 -->
+          <span v-if="emailError" class="text-danger">{{ emailError }}</span>
+          <button @click.prevent="sendVerificationCode">
+            {{ verificationSent ? "재전송" : "인증번호 받기" }}
+          </button>
+        </div>
+        <div>
+          <!-- 인증번호 입력 필드: 인증번호 발송 후 활성화 -->
+          <div v-if="verificationSent">
+            <label for="verification-code">인증번호</label>
+            <input
+              type="text"
+              id="verification-code"
+              v-model="verificationCode"
+              class="form-control"
+              placeholder="인증번호를 입력하세요"
+            />
+          </div>
+          
+          <!-- 인증번호 에러 메시지: 항상 표시 -->
+          <span v-if="verificationCodeError" class="text-danger">{{ verificationCodeError }}</span>
+        </div>
+
+
+
+
+        
         <div class="form-group">
           <label for="username">사용자 별명</label>
           <input
@@ -81,12 +119,17 @@ import MovieSignUpModal from "@/components/Movies/MovieSignUpModal.vue";
 const store = useAccountStore();
 const router = useRouter();
 
+const email = ref(null);
+const verificationCode = ref(null)
+const verificationSent = ref(false);
+const verificationCodeError = ref(null);
 const username = ref(null);
 const password1 = ref(null);
 const password2 = ref(null);
 const movieError = ref(null);
 
 // 에러 메시지
+const emailError = ref(null);
 const usernameError = ref(null);
 const passwordError = ref(null);
 const passwordError2 = ref(null);
@@ -124,6 +167,8 @@ const signUp = () => {
     password1: password1.value,
     password2: password2.value,
     selectedMovies: selectedMovies.value,
+    email: email.value,
+    verification_code: verificationCode.value,
   };
 
   axios
@@ -135,14 +180,39 @@ const signUp = () => {
       router.push({ name: "HomeView" });
     })
     .catch((err) => {
+      console.log("서버 응답:", err.response.data); // 응답 데이터 확인
       if (err.response && err.response.data) {
+        emailError.value = null;
+        verificationCodeError.value = null;
+        usernameError.value = null;
+        passwordError.value = null;
+        passwordError2.value = null;
+
+        // 인증번호 관련 에러 처리
+        if (err.response.data.verification_code) {
+          const verificationError = err.response.data.verification_code[0];
+          if (verificationError === "인증번호가 일치하지 않습니다.") {
+            verificationCodeError.value = "인증번호가 일치하지 않습니다.";
+          } else if (verificationError === "This field may not be null.") {
+            verificationCodeError.value = "이메일을 인증해주세요";
+          } else {
+            verificationCodeError.value = verificationError; // 기타 에러 메시지
+          }
+        }
+
+        // 이메일 에러 처리
+        if (err.response.data.email) {
+          emailError.value = "올바른 이메일 형식으로 입력해주세요."
+        }
+        // 사용자 이름 에러 처리
         if (err.response.data.username) {
           usernameError.value = "이미 존재하는 사용자 이름입니다.";
         }
+        // 비밀번호 에러 처리
         if (err.response.data.password1) {
-          passwordError.value =
-            "비밀번호는 최소 8글자 이상이어야 합니다.";
+          passwordError.value = "비밀번호는 최소 8글자 이상이어야 합니다.";
         }
+        // 기타 에러 처리
         if (err.response.data.non_field_errors) {
           passwordError.value = "비밀번호가 일치하지 않습니다.";
         }
@@ -152,8 +222,21 @@ const signUp = () => {
     });
 };
 
+
+
+
+
+
 const validateSignUp = () => {
   let hasError = false;
+
+  // 이메일 검증
+  if (!email.value) {
+    emailError.value = "이메일을 입력해주세요";
+    hasError = true;
+  } else {
+    emailError.value = null;
+  }
 
   // 사용자 이름 검증
   if (!username.value) {
@@ -252,6 +335,17 @@ watch(password2, (newPasswordConfirm) => {
   }
 });
 
+const sendVerificationCode = () => {
+  axios
+    .post(`${store.API_URL}/api/v1/email-verification/`, { email: email.value })
+    .then((response) => {
+      alert(response.data.message); 
+      verificationSent.value = true;  // 인증번호 입력 필드 활성화
+    })
+    .catch((error) => {
+      alert(error.response.data.error || "오류가 발생했습니다. 다시 시도해주세요.");
+    });
+};
 </script>
 
 

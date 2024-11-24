@@ -1,7 +1,7 @@
 from dj_rest_auth.registration.views import RegisterView
 from rest_framework.response import Response
 from rest_framework import status
-from movies.models import Movie, Review
+from django.core.cache import cache
 from accounts.serializers import CustomRegisterSerializer
 
 '''
@@ -9,4 +9,6 @@ from accounts.serializers import CustomRegisterSerializer
 '''
 class CustomSignUpView(RegisterView):
     serializer_class = CustomRegisterSerializer
-    pass
+    
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
