@@ -31,11 +31,33 @@
           <p class="review-rating">⭐ {{ review.rating.toFixed(1) }}</p>
           <p class="review-likes" @click="reviewLike">👍 {{ likesCount }}</p>
         </div>
-        <div class="review-footer">
+        <div class="review-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <!-- 날짜 -->
           <p class="review-date">🕒 {{ new Date(review.created_at).toLocaleString() }}</p>
-          <button class="btn btn-primary review-btn" @click="openReviewDetail">댓글 보기</button>
-          <button v-if="store.userName === review.user.username" class="btn review-btn" @click="updateReview">수정</button>
-          <button v-if="store.userName === review.user.username" class="btn review-btn" @click="deleteReview">삭제</button>
+          
+          <!-- 버튼 그룹 -->
+          <div class="review-buttons" style="display: flex; gap: 5px;">
+            <button
+              v-if="store.userName === review.user.username"
+              class="btn review-btn"
+              @click="updateReview"
+            >
+              수정
+            </button>
+            <button
+              v-if="store.userName === review.user.username"
+              class="btn review-btn"
+              @click="deleteReview"
+            >
+              삭제
+            </button>
+            <button
+              class="btn btn-primary review-btn"
+              @click="openReviewDetail"
+            >
+              댓글 보기
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -233,10 +255,9 @@ const deleteReview = () => {
 }
 
 .review-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
+  display: flex; /* 날짜와 버튼 그룹을 가로로 배치 */
+  justify-content: space-between; /* 날짜와 버튼 그룹을 양 끝으로 배치 */
+  align-items: center; /* 세로 정렬 */
 }
 
 .review-stats {
@@ -259,6 +280,7 @@ const deleteReview = () => {
   font-size: 14px;
   border-radius: 5px;
   transition: background 0.3s ease;
+  color: white;
 }
 
 .review-btn:hover {
@@ -285,5 +307,14 @@ const deleteReview = () => {
   border: 1px solid #ddd;
   margin-bottom: 10px;
   cursor: pointer;
+}
+
+.review-buttons {
+  display: flex; /* 버튼을 가로로 배치 */
+  gap: 5px; /* 버튼 간의 간격을 좁게 설정 */
+}
+
+.review-footer .review-btn {
+  margin: 0; /* 버튼 자체의 여백 제거 */
 }
 </style>

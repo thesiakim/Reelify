@@ -18,7 +18,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework import status
 
 from movies.models import Movie, Country, Genre, Review, Comment, Actor, Director
-from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer, UserSerializer
+from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer, UserSerializer, GenreSerializer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import cosine
@@ -890,6 +890,30 @@ def review_graph(request, username):
         "average_rating": round(average_rating, 2),  
         "rating_distribution": distribution_dict,
     })
+
+
+# 유저 페이지 주인의 선호 장르 계산 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def preferred_genres(request, username):
+    user = get_object_or_404(User, username=username)
+
+    # User가 작성한 리뷰 중 rating >= 4.0인 리뷰 필터링
+    user_reviews = Review.objects.filter(user=user, rating__gte=4.0)
+
+    # 영화와 연결된 장르의 추천 빈도 합산
+    genre_preferences = (
+        Genre.objects.filter(movies__review__in=user_reviews)
+        .annotate(preference_score=Count('movies__likes')) 
+        .order_by('-preference_score')
+    )
+
+    top_genres = genre_preferences[:3]
+    genres_data = [{'id': genre.id, 'name': genre.name} for genre in top_genres]
+    serializer = GenreSerializer(genres_data, many=True)
+
+    return Response(serializer.data)
+
 
 
 # 회원 탈퇴
