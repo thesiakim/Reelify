@@ -13,15 +13,19 @@
         <h3 class="mb-4">{{ userData.username }}</h3>
         <div class="follow-text d-flex flex-row mx-2">
           <p @click="goToUserFollower(userData.username)">
-            팔로우&ensp;{{ userData.followers_count }}&ensp;</p>
-          <p @click="goToUserFollowing(userData.username)">&ensp;팔로잉&ensp;{{userData.followings_count}}</p>
+            팔로우&ensp;{{ userData.followers_count }}&ensp;
+          </p>
+          <p @click="goToUserFollowing(userData.username)">
+            &ensp;팔로잉&ensp;{{ userData.followings_count }}
+          </p>
         </div>
       </div>
       <div
         v-if="
           store.isLogin === true &&
           store.userName !== userData.username &&
-          (isFollow != null && isFollow === false)
+          isFollow != null &&
+          isFollow === false
         "
         class="follow-btn"
       >
@@ -31,7 +35,8 @@
         v-else-if="
           store.isLogin === true &&
           store.userName !== userData.username &&
-          (isFollow != null && isFollow === true)
+          isFollow != null &&
+          isFollow === true
         "
         class="follow-btn"
       >
@@ -42,11 +47,12 @@
           store.isLogin === true && store.userName === userData.username
         "
       >
-        <button class="update-btn" @click="goToUpdate(store.userName)">내 정보 수정</button>
+        <button class="update-btn" @click="goToUpdate(store.userName)">
+          내 정보 수정
+        </button>
       </div>
     </div>
 
-    
     <!-- 영화, 작성 - 추천 리뷰 보여주기 -->
     <div class="">
       <hr />
@@ -57,14 +63,23 @@
         </div>
         <div class="text-center">
           <p>작성한 리뷰 수</p>
-          <span class="review-cnt" v-if="writeReviewCnt > 3" @click="goToUserReviewList(userData.username)">
+          <span
+            class="review-cnt"
+            v-if="writeReviewCnt > 3"
+            @click="goToUserReviewList(userData.username)"
+          >
             {{ writeReviewCnt }}
           </span>
           <span v-else>{{ writeReviewCnt }}</span>
         </div>
         <div class="text-center">
           <p>추천한 리뷰 수</p>
-          <span class="likeReview-cnt" v-if="likeReviewCnt > 3" @click="goToUserLikeReview(userData.username)">{{ likeReviewCnt }}</span>
+          <span
+            class="likeReview-cnt"
+            v-if="likeReviewCnt > 3"
+            @click="goToUserLikeReview(userData.username)"
+            >{{ likeReviewCnt }}</span
+          >
           <span v-else>{{ likeReviewCnt }}</span>
         </div>
       </div>
@@ -75,36 +90,77 @@
     <div>
       <h2>{{ userData.username }}님이 추천하는 영화</h2>
       <UserLikeMovie :likemovie="likeMovie" />
-      <hr>
+      <hr />
     </div>
     <!-- 작성한 리뷰 보여주기 -->
     <div>
       <h2>{{ userData.username }}님이 작성한 리뷰</h2>
-      <div class="d-flex justify-content-end" v-if="userData && userData.written_reviews && userData.written_reviews.length > 3">
-        <button class="click-btn" @click="goToUserReviewList(userData.username)">전체 리뷰 / 댓글 보기</button>
+      <div
+        class="d-flex justify-content-end"
+        v-if="
+          userData &&
+          userData.written_reviews &&
+          userData.written_reviews.length > 3
+        "
+      >
+        <button
+          class="click-btn"
+          @click="goToUserReviewList(userData.username)"
+        >
+          전체 리뷰 / 댓글 보기 + {{ writeReviewCnt }}
+        </button>
       </div>
       <div class="mt-4 d-flex flex-column align-items-center">
-        <UserReviewCard class="mb-4" v-for="review in limitedReviews" :key="review.id" :review="review"/>
+        <UserReviewCard
+          class="mb-4"
+          v-for="review in limitedReviews"
+          :key="review.id"
+          :review="review"
+        />
       </div>
-      
     </div>
-    <hr>
+    <hr />
 
     <!-- 추천한 리뷰 보여주기 -->
     <div>
       <h2>{{ userData.username }}님이 추천한 리뷰</h2>
-      <div class="d-flex justify-content-end" v-if="userData && userData.liked_reviews && userData.liked_reviews.length > 3">
-        <button @click="goToUserLikeReview(userData.username)">전체 리뷰 / 댓글 보기</button>
+      <div
+        class="d-flex justify-content-end"
+        v-if="
+          userData &&
+          userData.liked_reviews &&
+          userData.liked_reviews.length > 3
+        "
+      >
+        <button @click="goToUserLikeReview(userData.username)">
+          전체 리뷰 / 댓글 보기
+        </button>
       </div>
-      <div class="mt-4 d-flex flex-column align-items-center" v-if="userData && userData.liked_reviews &&  userData.liked_reviews.length > 0">
-        <UserLikeReview class="mb-4" v-for="review in limitedLikeReviews" :key="review.id" :review="review"/>
+      <div
+        class="mt-4 d-flex flex-column align-items-center"
+        v-if="
+          userData &&
+          userData.liked_reviews &&
+          userData.liked_reviews.length > 0
+        "
+      >
+        <UserLikeReview
+          class="mb-4"
+          v-for="review in limitedLikeReviews"
+          :key="review.id"
+          :review="review"
+        />
       </div>
-      <div v-else-if="userData && userData.liked_reviews && userData.liked_reviews.length === 0">
+      <div
+        v-else-if="
+          userData &&
+          userData.liked_reviews &&
+          userData.liked_reviews.length === 0
+        "
+      >
         <h3 class="text-center my-3">아직 추천한 리뷰가 없어요😯</h3>
       </div>
-      
     </div>
-
   </div>
 </template>
 
@@ -140,7 +196,7 @@ console.log(route.params.username);
 const isFollow = ref(null);
 
 const limitedReviews = ref([]);
-const limitedLikeReviews = ref([])
+const limitedLikeReviews = ref([]);
 
 const loadUserData = (username) => {
   // 유저 정보 조회하는 요청
@@ -149,7 +205,6 @@ const loadUserData = (username) => {
     url: `${store.API_URL}/api/v1/user-page/${route.params.username}/`,
   })
     .then((res) => {
-    
       console.log(res.data);
       userData.value = res.data;
       likeMovie.value = res.data.liked_movies;
@@ -160,50 +215,51 @@ const loadUserData = (username) => {
       writeReviewCnt.value = res.data.written_reviews.length;
 
       // 리뷰가 3개 이상이면 3개만 가져오기
-      limitedReviews.value = res.data.written_reviews.length > 3
-        ? res.data.written_reviews.slice(0,3)
-        : res.data.written_reviews
+      limitedReviews.value =
+        res.data.written_reviews.length > 3
+          ? res.data.written_reviews.slice(0, 3)
+          : res.data.written_reviews;
 
-      limitedLikeReviews.value = res.data.liked_reviews.length > 3
-        ? res.data.liked_reviews.slice(0, 3)
-        : res.data.liked_reviews
-      
-      console.log(limitedReviews.value)
+      limitedLikeReviews.value =
+        res.data.liked_reviews.length > 3
+          ? res.data.liked_reviews.slice(0, 3)
+          : res.data.liked_reviews;
+
+      console.log(limitedReviews.value);
     })
     .catch((err) => {
       console.log(err);
     });
-    
-    // 팔로잉 되어 있는지 아닌지 확인하는 요청
-    axios({
-      method: 'get',
-      url: `${store.API_URL}/api/v1/user/${route.params.username}/is_follow/`,
-      headers: {
-        Authorization: `Token ${store.token}`
-      }
+
+  // 팔로잉 되어 있는지 아닌지 확인하는 요청
+  axios({
+    method: "get",
+    url: `${store.API_URL}/api/v1/user/${route.params.username}/is_follow/`,
+    headers: {
+      Authorization: `Token ${store.token}`,
+    },
+  })
+    .then((res) => {
+      console.log(res.data);
+      isFollow.value = res.data.is_following;
+      console.log(isFollow.value);
     })
-      .then((res) => {
-        console.log(res.data)
-        isFollow.value = res.data.is_following
-        console.log(isFollow.value)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 
 // 최초 로드
 onMounted(() => {
-  loadUserData(route.params.username)
-})
+  loadUserData(route.params.username);
+});
 // 라우트 변경 감지
 watch(
   () => route.params.username,
   (newUsername) => {
-    loadUserData(newUsername)
+    loadUserData(newUsername);
   }
 );
-
 
 // 팔로우 구현
 const followUser = function (username) {
@@ -249,28 +305,27 @@ const goToUserPage = function (username) {
 
 // 유저가 쓴 전체 리뷰 페이지 이동 함수
 const goToUserReviewList = function (username) {
-  router.push({ name: "UserReviewListView", params: { username: username}})
-}
+  router.push({ name: "UserReviewListView", params: { username: username } });
+};
 
 // 유저가 추천한 리뷰 리스트 페이지 이동 함수
 const goToUserLikeReview = function (username) {
-  router.push({ name: "UserLikeReviewView", params: { username: username }})
-}
+  router.push({ name: "UserLikeReviewView", params: { username: username } });
+};
 
 // 팔로워 목록 확인 페이지 이동 함수
 const goToUserFollower = function (username) {
-  router.push({ name: 'UserFollowerView', params: { username: username }})
-
-}
+  router.push({ name: "UserFollowerView", params: { username: username } });
+};
 // 팔로잉 목록 확인 페이지 이동 함수
 const goToUserFollowing = function (username) {
-  router.push({ name: 'UserFollowingView', params: { username: username }})
-}
+  router.push({ name: "UserFollowingView", params: { username: username } });
+};
 
 // 내 정보 수정 페이지 이동 함수
 const goToUpdate = function (username) {
-  router.push({name: 'UserUpdateView', params: {username: username}})
-}
+  router.push({ name: "UserUpdateView", params: { username: username } });
+};
 </script>
 
 <style scoped>
@@ -294,10 +349,14 @@ const goToUpdate = function (username) {
 }
 .follow-text {
   font-size: 20px;
-  cursor: pointer
+  cursor: pointer;
 }
 .update-btn {
   display: flex;
+  color: white;
+  background-color: #a1eebd;
+  border-color: transparent;
+  border-radius: 8px;
 }
 .click-btn {
   color: white;
@@ -310,14 +369,14 @@ const goToUpdate = function (username) {
   border-radius: 2px;
 }
 .review-cnt:hover {
-  background-color: #a1eebd
+  background-color: #a1eebd;
 }
 .likeReview-cnt {
   cursor: pointer;
   border-radius: 2px;
 }
 .likeReview-cnt:hover {
-  background-color: #a1eebd
+  background-color: #a1eebd;
 }
 @media (max-width: 768px) {
   .profile-text {

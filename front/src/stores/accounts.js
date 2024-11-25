@@ -1,6 +1,6 @@
 import { ref, computed } from "vue";
 import { defineStore } from "pinia";
-
+import { useRouter } from "vue-router";
 import axios from "axios";
 import UserLikeMovie from "@/components/Community/UserLikeMovie.vue";
 
@@ -10,7 +10,7 @@ export const useAccountStore = defineStore(
     const API_URL = "http://127.0.0.1:8000";
     const token = ref(null);
     const userName = ref(null);
-
+    const router = useRouter();
     // 회원 관련 ===============================================================================================
 
     const loginResult = ref(null);
@@ -54,6 +54,34 @@ export const useAccountStore = defineStore(
       console.log("로그아웃 후 userName", userName.value);
     };
 
+    // 회원정보 수정
+    const UserUpdate = function (payload) {
+      const { old_password, new_password1, new_password2 } = payload;
+
+      axios({
+        method: "post",
+        url: `${API_URL}/accounts/password/change/`,
+        headers: {
+          Authorization: `Token ${token.value}`,
+          "Content-Type": "application/json",
+        },
+        data: {
+          old_password: old_password,
+          new_password1: new_password1,
+          new_password2: new_password2,
+        },
+      })
+        .then((res) => {
+          console.log(res.data);
+          console.log("회원정보 수정이 완료되었습니다.");
+          logOut();
+          router.push({ name: "HomeView" });
+        })
+        .catch((err) => {
+          console.log(err.response.data);
+        });
+    };
+
     // 영화 관련 ===============================================================================================
 
     // 검색 결과 저장
@@ -89,6 +117,7 @@ export const useAccountStore = defineStore(
       userName,
       getBackDrop,
       getOttPath,
+      UserUpdate,
     };
   },
   { persist: true }

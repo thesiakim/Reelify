@@ -1,74 +1,86 @@
 <template>
   <div>
-    
-      <div class="card " style="width: 25rem;">
-        <div class="card-body">
-          <div class="d-flex flex-row justify-content-between mb-2">
-            <h5 class="card-title">{{ review.movie.title }} </h5>
-            <div>🌟{{ review.rating }}</div>
-          </div>
-          <div class="d-flex flex-row justify-content-center align-items-center">
-            <!-- 영화 포스터 -->
-            <img @click="goToMovieDetail(review.movie.id)" class="movie-poster-img" :src="store.getPosterPath(review.movie.poster_path)" alt="영화 포스터">
-            <!-- 텍스트 및 버튼 -->
-            <div class="text-container text-center">
-              <p class="card-text">{{ review.content }}</p>
-              <div v-if="route.params.username === store.userName" class="text-end">
-                <button class="update-btn mx-2" @click="updateReview(review.id)">수정</button>
-                <button class="delete-btn" @click="deleteReview(review.id)">삭제</button>
-              </div>
+    <div class="card" style="width: 25rem">
+      <div class="card-body">
+        <div class="d-flex flex-row justify-content-between mb-2">
+          <h5 class="card-title">{{ review.movie.title }}</h5>
+          <div>⭐{{ review.rating }}</div>
+        </div>
+        <div class="d-flex flex-row justify-content-center align-items-center">
+          <!-- 영화 포스터 -->
+          <img
+            @click="goToMovieDetail(review.movie.id)"
+            class="movie-poster-img"
+            :src="store.getPosterPath(review.movie.poster_path)"
+            alt="영화 포스터"
+          />
+          <!-- 텍스트 및 버튼 -->
+          <div class="text-container text-center">
+            <p class="card-text">{{ review.content }}</p>
+            <div
+              v-if="route.params.username === store.userName"
+              class="text-end"
+            >
+              <button class="update-btn mx-2" @click="updateReview(review.id)">
+                수정
+              </button>
+              <button class="delete-btn" @click="deleteReview(review.id)">
+                삭제
+              </button>
             </div>
           </div>
         </div>
       </div>
-      <hr>
+    </div>
+    <hr />
   </div>
 </template>
 
 <script setup>
-import { useAccountStore } from '@/stores/accounts';
-import { useRouter, useRoute } from 'vue-router';
-import { onMounted } from 'vue';
+import { useAccountStore } from "@/stores/accounts";
+import { useRouter, useRoute } from "vue-router";
+import { onMounted } from "vue";
 import axios from "axios";
-const store = useAccountStore()
-const router = useRouter()
-const route = useRoute()
+const store = useAccountStore();
+const router = useRouter();
+const route = useRoute();
 defineProps({
-  review: Object
-})
+  review: Object,
+});
 
 // 영화 디테일로 이동 함수
 const goToMovieDetail = function (movieId) {
-  console.log(movieId)
-  router.push({name:'MovieDetailView', params:{ movie_id: movieId }})
-}
-
+  console.log(movieId);
+  router.push({ name: "MovieDetailView", params: { movie_id: movieId } });
+};
 
 // 리뷰 업데이트 함수
 const updateReview = function (reviewId) {
-  router.push({ name: "ReviewUpdateView", params: { review_id: reviewId}})
-}
+  router.push({ name: "ReviewUpdateView", params: { review_id: reviewId } });
+};
 
 // 리뷰 삭제 함수
 const deleteReview = function (reviewId) {
-  const token = store.token
+  const token = store.token;
 
   axios({
-    method: 'delete',
+    method: "delete",
     url: `${store.API_URL}/api/v1/reviews/${reviewId}/`,
     headers: {
-      Authorization: `Token ${token}`
-    }
+      Authorization: `Token ${token}`,
+    },
   })
     .then((res) => {
-      console.log('리뷰 삭제 완료')
+      console.log("리뷰 삭제 완료");
     })
     .catch((err) => {
-      console.log(`리뷰 삭제 중 에러 발생: ${err}`)
-    })
-    router.push({ name: 'UserPageView', params: { username: `${route.params.username}`}})
-}
-
+      console.log(`리뷰 삭제 중 에러 발생: ${err}`);
+    });
+  router.push({
+    name: "UserPageView",
+    params: { username: `${route.params.username}` },
+  });
+};
 </script>
 
 <style scoped>

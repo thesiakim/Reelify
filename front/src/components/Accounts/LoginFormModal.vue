@@ -23,7 +23,9 @@
               placeholder="비밀번호를 입력하세요"
             />
             <div class="error-message-container">
-              <span v-if="errorMessage" class="error-message">{{ errorMessage }}</span>
+              <span v-if="errorMessage" class="error-message">{{
+                errorMessage
+              }}</span>
             </div>
             <input type="submit" value="확인" class="submit-btn" />
           </form>
@@ -98,6 +100,7 @@ const closeModal = () => {
   font-weight: bold;
   color: #333;
   margin-bottom: 20px;
+  text-shadow: none !important;
 }
 
 /* 입력 필드 */
@@ -107,6 +110,7 @@ const closeModal = () => {
   color: #555;
   margin-bottom: 5px;
   text-align: left;
+  text-shadow: none !important;
 }
 
 .form-input {

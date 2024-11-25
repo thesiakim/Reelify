@@ -72,14 +72,14 @@ const fetchAutocomplete = debounce(() => {
     params: { query: query.value },
   })
     .then((response) => {
-      console.log("API 응답 데이터:", response.data); 
-      autocompleteResults.value = response.data; 
-      console.log("드롭다운 데이터:", autocompleteResults.value); 
+      console.log("API 응답 데이터:", response.data);
+      autocompleteResults.value = response.data;
+      console.log("드롭다운 데이터:", autocompleteResults.value);
     })
     .catch((error) => {
       console.error("자동완성 API 호출 중 오류:", error);
     });
-}, 200);  // 디바운스 적용
+}, 200); // 디바운스 적용
 
 const handleInput = (event) => {
   query.value = event.target.value;
@@ -126,7 +126,8 @@ const handleKeydown = (event) => {
 
   if (event.key === "ArrowDown") {
     // 아래로 이동
-    activeIndex.value = (activeIndex.value + 1) % autocompleteResults.value.length;
+    activeIndex.value =
+      (activeIndex.value + 1) % autocompleteResults.value.length;
     event.preventDefault();
   } else if (event.key === "ArrowUp") {
     // 위로 이동
@@ -149,12 +150,11 @@ const handleKeydown = (event) => {
   }
 };
 
-
 // 로그아웃
 const logOut = function () {
   console.log("로그아웃 되었습니다.");
   store.logOut();
-  router.push({name:'HomeView'})
+  router.push({ name: "HomeView" });
 };
 </script>
 
@@ -247,7 +247,7 @@ const logOut = function () {
                 aria-label="Search"
                 v-model="query"
                 @input="handleInput"
-                @keydown="handleKeydown" 
+                @keydown="handleKeydown"
               />
               <button class="btn search-btn">Search</button>
 
@@ -255,21 +255,19 @@ const logOut = function () {
               <ul
                 v-if="autocompleteResults.length > 0"
                 class="list-group position-absolute w-100"
-                style="top: 100%; z-index: 1000;"
+                style="top: 100%; z-index: 1000"
               >
                 <li
                   v-for="(result, index) in autocompleteResults"
                   :key="result.id"
                   class="list-group-item list-group-item-action"
-                  :class="{ 'active': index === activeIndex }" 
+                  :class="{ active: index === activeIndex }"
                   @click="selectAutocomplete(result.title)"
                 >
                   {{ result.title }}
                 </li>
               </ul>
             </form>
-
-
 
             <RouterLink
               v-if="store.isLogin === false"
@@ -296,7 +294,7 @@ const logOut = function () {
             <LoginFormModal
               v-if="showModal"
               @close="closeModal"
-              class="text-dark"
+              class="text-light login-form-modal"
             />
 
             <RouterLink
@@ -359,8 +357,9 @@ const logOut = function () {
 .text-light {
   color: white !important;
   font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* 검은색 그림자 */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
+
 .text-dark {
   color: black !important;
 }
@@ -397,5 +396,4 @@ const logOut = function () {
   background-color: #f0c8d2;
   color: white;
 }
-
 </style>

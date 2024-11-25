@@ -15,7 +15,7 @@ import UserReviewListView from "@/views/Community/UserReviewListView.vue";
 import UserLikeReviewView from "@/views/Community/UserLikeReviewView.vue";
 import UserFollowerView from "@/views/Community/UserFollowerView.vue";
 import UserFollowingView from "@/views/Community/UserFollowingView.vue";
-import UserUpdateView from "@/views/Community/UserUpdateView.vue";
+import UserUpdateView from "@/views/Accounts/UserUpdateView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -99,22 +99,22 @@ const router = createRouter({
     {
       path: "/:username/user-following",
       name: "UserFollowingView",
-      component: UserFollowingView
+      component: UserFollowingView,
     },
     {
       path: "/:username/user-like-review",
       name: "UserLikeReviewView",
-      component: UserLikeReviewView
+      component: UserLikeReviewView,
     },
     {
-      path:"/:username/user-update",
+      path: "/:username/user-update",
       name: "UserUpdateView",
-      component: UserUpdateView
-    }
+      component: UserUpdateView,
+    },
   ],
-  scrollBehavior (to, from, savedPosition) {
-    return { top: 0 }
-  }
+  scrollBehavior(to, from, savedPosition) {
+    return { top: 0 };
+  },
 });
 
 export default router;
