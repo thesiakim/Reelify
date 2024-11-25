@@ -4,45 +4,44 @@
       <h1 class="signup-title">회원가입</h1>
       <form @submit.prevent="validateSignUp">
 
-        <!-- 이메일 입력 필드 -->
-        <div class="form-group">
-          <label for="email">이메일</label>
-          <input
-            type="email"
-            id="email"
-            v-model="email"
-            class="form-control"
-            placeholder="이메일을 입력하세요"
-          />
-          <!-- 이메일 에러 메시지 출력 -->
-          <span v-if="emailError" class="text-danger">{{ emailError }}</span>
-          <button @click.prevent="sendVerificationCode">
-            {{ verificationSent ? "재전송" : "인증번호 받기" }}
-          </button>
-        </div>
-        <div>
-          <!-- 인증번호 입력 필드: 인증번호 발송 후 활성화 -->
-          <div v-if="verificationSent">
-            <label for="verification-code">인증번호</label>
+        <div class="form-group d-flex flex-column">
+          <div class="d-flex align-items-center">
+            <label for="email" class="me-2">이메일</label>
             <input
-              type="text"
-              id="verification-code"
-              v-model="verificationCode"
-              class="form-control"
-              placeholder="인증번호를 입력하세요"
+              type="email"
+              id="email"
+              v-model="email"
+              class="form-control me-2"
+              placeholder="이메일을 입력하세요"
+              style="flex: 1;"
             />
+            <button @click.prevent="sendVerificationCode" class="btn btn-primary">
+              {{ verificationSent ? "재전송" : "인증번호 받기" }}
+            </button>
           </div>
-          
-          <!-- 인증번호 에러 메시지: 항상 표시 -->
+          <!-- 이메일 에러 메시지 출력 -->
+          <span v-if="emailError" class="text-danger mt-2" style="text-align: left;">
+            {{ emailError }}
+          </span>
+        </div>
+
+
+        <!-- 인증번호 입력칸 및 에러 메시지 -->
+        <div v-if="verificationSent" class="d-flex align-items-center mt-3">
+          <label for="verification-code" class="me-2">인증번호</label>
+          <input
+            type="text"
+            id="verification-code"
+            v-model="verificationCode"
+            class="form-control me-2 verification-code-input"
+            placeholder="인증번호 입력"
+          />
           <span v-if="verificationCodeError" class="text-danger">{{ verificationCodeError }}</span>
         </div>
 
 
-
-
-        
-        <div class="form-group">
-          <label for="username">사용자 별명</label>
+        <div class="form-group mt-4">
+          <label for="username">별명</label>
           <input
             type="text"
             id="username"
@@ -52,6 +51,7 @@
           />
           <span v-if="usernameError" class="text-danger">{{ usernameError }}</span>
         </div>
+
 
         <div class="form-group">
           <label for="password1">비밀번호</label>
@@ -97,6 +97,13 @@
       </form>
     </div>
 
+    <!-- CustomAlertModal -->
+    <CustomAlertModal
+      v-if="showAlertModal"
+      :message="alertMessage"
+      @close="showAlertModal = false"
+    />
+
     <!-- MovieSignUpModal -->
     <MovieSignUpModal
       v-if="showModal"
@@ -115,6 +122,7 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { useAccountStore } from "@/stores/accounts";
 import MovieSignUpModal from "@/components/Movies/MovieSignUpModal.vue";
+import CustomAlertModal from "@/components/CustomAlertModal.vue";
 
 const store = useAccountStore();
 const router = useRouter();
@@ -127,6 +135,8 @@ const username = ref(null);
 const password1 = ref(null);
 const password2 = ref(null);
 const movieError = ref(null);
+const showAlertModal = ref(false); 
+const alertMessage = ref(""); 
 
 // 에러 메시지
 const emailError = ref(null);
@@ -160,7 +170,7 @@ const closeModal = () => {
   showModal.value = false;
 };
 
-
+// 회원가입
 const signUp = () => {
   const payload = {
     username: username.value,
@@ -191,17 +201,24 @@ const signUp = () => {
         // 인증번호 관련 에러 처리
         if (err.response.data.verification_code) {
           const verificationError = err.response.data.verification_code[0];
-          if (verificationError === "인증번호가 일치하지 않습니다.") {
+          if (verificationError === "인증번호가 만료되었습니다. 다시 요청해주세요.") {
+            verificationCodeError.value = "인증번호가 만료되었습니다. 다시 요청해주세요.";
+          } else if (verificationError === "인증번호가 일치하지 않습니다.") {
             verificationCodeError.value = "인증번호가 일치하지 않습니다.";
           } else if (verificationError === "This field may not be null.") {
             verificationCodeError.value = "이메일을 인증해주세요";
+          } else if (verificationError == "This field may not be blank") {
+            verificationCodeError.value = "인증번호를 입력해주세요."
           } else {
             verificationCodeError.value = verificationError; // 기타 에러 메시지
           }
         }
 
         // 이메일 에러 처리
-        if (err.response.data.email) {
+        if (err.response.data.email == '이미 사용 중인 이메일입니다.') {
+          emailError.value = "이미 사용 중인 이메일입니다."
+        }
+        if (err.response.data.email == 'Enter a valid email address.') {
           emailError.value = "올바른 이메일 형식으로 입력해주세요."
         }
         // 사용자 이름 에러 처리
@@ -222,11 +239,7 @@ const signUp = () => {
     });
 };
 
-
-
-
-
-
+// 회원가입 유효성 검증
 const validateSignUp = () => {
   let hasError = false;
 
@@ -278,6 +291,7 @@ const validateSignUp = () => {
   }
 };
 
+// 영화 선택 핸들러 
 const handleMoviesSelected = (movies) => {
   selectedMovies.value = movies;
 
@@ -289,9 +303,13 @@ const handleMoviesSelected = (movies) => {
   console.log("현재 선택된 영화:", selectedMovies.value);
 };
 
-
-
 // 사용자 입력을 감지하여 에러 메시지 초기화
+watch(email, (newVal) => {
+  if (newVal) {
+    emailError.value = null; 
+  }
+});
+
 watch(username, (newVal) => {
   if (newVal) {
     usernameError.value = null;
@@ -335,19 +353,31 @@ watch(password2, (newPasswordConfirm) => {
   }
 });
 
+// 인증번호 요청 
 const sendVerificationCode = () => {
+  if (!email.value) {
+    showAlert("이메일을 입력해주세요"); // 모달 표시
+    return;
+  }
+
+
   axios
     .post(`${store.API_URL}/api/v1/email-verification/`, { email: email.value })
     .then((response) => {
-      alert(response.data.message); 
+      showAlert(response.data.message); // 성공 메시지를 모달로 표시
       verificationSent.value = true;  // 인증번호 입력 필드 활성화
     })
     .catch((error) => {
       alert(error.response.data.error || "오류가 발생했습니다. 다시 시도해주세요.");
     });
 };
-</script>
 
+const showAlert = (message) => {
+  alertMessage.value = message;
+  showAlertModal.value = true;
+};
+
+</script>
 
 
 <style scoped>
@@ -468,4 +498,11 @@ const sendVerificationCode = () => {
   font-size: 14px;
   padding-left: 6px;
 }
+
+.verification-code-input {
+  width: 120px; /* 인증번호 입력칸 너비 */
+  max-width: 100%; /* 반응형 지원 */
+}
+
+
 </style>

@@ -35,12 +35,14 @@ class CustomRegisterSerializer(RegisterSerializer):
         return value
     
     def validate(self, data):
-        # 이메일 인증번호 검증
         email = data.get("email")
         input_code = data.get("verification_code")
-        cached_code = cache.get(email)
+        cached_code = cache.get(email)  # 캐시에서 인증코드 조회
 
-        if not cached_code or str(cached_code) != input_code:
+        if not cached_code:
+            raise serializers.ValidationError({"verification_code": "인증번호가 만료되었습니다. 다시 요청해주세요."})
+
+        if str(cached_code) != input_code:
             raise serializers.ValidationError({"verification_code": "인증번호가 일치하지 않습니다."})
 
         return data
