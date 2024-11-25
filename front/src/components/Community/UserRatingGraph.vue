@@ -1,7 +1,7 @@
 <template>
   <div class="rating-statistics my-4">
     <div v-if="isDataReady" class="chart-content">
-      <h3>평균 별점: {{ averageRating.toFixed(2) }}</h3>
+      <h3 class="average-rating-text">평균 별점: <span class="rating-value">{{ averageRating.toFixed(2) }}</span></h3>
       <div class="chart-container">
         <canvas ref="ratingChartRef"></canvas>
       </div>
@@ -117,6 +117,9 @@ const initChart = async () => {
         callbacks: {
           label: (context) => `${context.parsed.y}명`,
         },
+      },
+      datalabels: {
+        display: false, // 포인트 위 수치 출력 비활성화
       },
     },
     scales: {
@@ -240,7 +243,21 @@ watch(isDataReady, async (newValue) => {
   background-color: #ffffff; /* 배경 흰색 */
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center; /* 텍스트 가운데 정렬 */
 }
+
+.average-rating-text {
+  font-size: 18px; /* 텍스트 크기 줄이기 */
+  font-weight: bold; /* 텍스트 강조 */
+  color: #444; /* 중간 톤 색상 */
+  margin-bottom: 15px; /* 아래쪽 여백 추가 */
+}
+
+.rating-value {
+  font-size: 22px; /* 별점 값 크기를 강조 */
+  color: #666; /* 별점 값을 강조하는 색상 */
+}
+
 
 .chart-container {
   position: relative;
