@@ -68,7 +68,7 @@ class Review(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     rating = models.FloatField()
-    content = models.TextField(null=True, blank=True)
+    content = models.TextField(null=True, blank=True, max_length=250)
     is_spoiler = models.BooleanField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
