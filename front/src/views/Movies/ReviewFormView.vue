@@ -35,6 +35,10 @@
           placeholder="리뷰를 입력해주세요"
           class="textarea"
         ></textarea>
+        <!-- 250자 초과 시 에러 메시지 출력 -->
+        <span v-if="formData.content.length > 250" class="error-message">
+          내용은 250자 이하여야 합니다.
+        </span>
       </div>
 
       <div class="form-group">
@@ -44,7 +48,13 @@
         </label>
       </div>
 
-      <button type="submit" class="submit-btn">완료</button>
+      <button
+        type="submit"
+        class="submit-btn"
+        :disabled="formData.content.length > 250"
+      >
+        완료
+      </button>
     </form>
 
     <!-- 에러 메시지 -->
@@ -116,6 +126,13 @@ const getFillPercentage = (index) => {
 const ratingError = ref(false);
 
 const handleSubmit = async () => {
+  // 리뷰 길이 초과 시 요청 차단
+  if ((formData.content || "").length > 250) {
+      errorMessage.value = "내용은 250자 이하여야 합니다.";
+      return;
+    }
+
+  // 별점 미입력 시 요청 차단
   if (formData.value.rating === 0) {
     ratingError.value = true;
     return;
@@ -306,9 +323,13 @@ const updateReview = function () {
 }
 
 .error-message {
-  font-size: 12px;
   color: red;
-  margin-top: 0; /* 기본 여백 제거 */
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+.submit-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 /* 수정된 이모지와 텍스트 배치 */
