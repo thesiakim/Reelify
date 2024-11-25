@@ -5,18 +5,28 @@
       class="user-profile d-flex flex-row justify-content-between align-items-center"
     >
       <div class="position-relative">
+        <!-- 프로필 이미지 -->
         <img
-          :src="`${store.API_URL}${userData.profile_img}`"
+          :src="profileImgUrl"
           class="user-img"
           alt="profile_img"
         />
-        <button
-          v-if="userData.username === store.userName"
-          @click="goToImageEdit(userData.username)"
-          class="position-absolute bottom-0 end-0 mb-2 me-2 badge rounded-pill"
-        >
-          편집
-        </button>
+
+        <!-- 파일 업로드 버튼 -->
+        <div v-if="userData.username === store.userName" class="position-absolute bottom-0 end-0 mb-2 me-2">
+          <input
+            type="file"
+            ref="fileInput"
+            class="d-none"
+            @change="uploadProfileImage"
+          />
+          <button
+            @click="triggerFileInput"
+            class="badge rounded-pill"
+          >
+            편집
+          </button>
+        </div>
       </div>
       <div class="profile-text text-center">
         <h3 class="mb-4">{{ userData.username }}</h3>
@@ -203,6 +213,7 @@ const likeReview = ref([]);
 const likeReviewCnt = ref(0);
 const writeReview = ref([]);
 const writeReviewCnt = ref(0);
+const profileImgUrl = ref("");
 console.log(route.params.username);
 
 // const props = defineProps({
@@ -230,6 +241,7 @@ const loadUserData = (username) => {
       likeReviewCnt.value = res.data.liked_reviews.length;
       writeReview.value = res.data.written_reviews;
       writeReviewCnt.value = res.data.written_reviews.length;
+      profileImgUrl.value = `${store.API_URL}${res.data.profile_img}`;
 
       // 리뷰가 3개 이상이면 3개만 가져오기
       limitedReviews.value =
@@ -277,6 +289,42 @@ watch(
     loadUserData(newUsername);
   }
 );
+
+// 파일 선택 트리거
+const fileInput = ref(null);
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+// 이미지 업로드
+const uploadProfileImage = async () => {
+  const file = fileInput.value?.files[0];
+  if (!file) {
+    alert("파일을 선택해주세요.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("profile_img", file);
+
+  try {
+    const response = await axios({
+      method: "patch",
+      url: `${store.API_URL}/api/v1/profile-image/`,
+      headers: {
+        Authorization: `Token ${store.token}`,
+        "Content-Type": "multipart/form-data",
+      },
+      data: formData,
+    });
+
+    profileImgUrl.value = `${response.data.profile_img}`;
+    console.log(response.data.profile_img)
+  } catch (error) {
+    console.error("이미지 업로드 오류:", error);
+    alert("이미지 업로드에 실패했습니다.");
+  }
+};
 
 // 팔로우 구현
 const followUser = function (username) {
