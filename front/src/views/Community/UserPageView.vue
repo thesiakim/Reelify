@@ -85,6 +85,9 @@
       </div>
       <hr />
     </div>
+
+    <UserRatingGraph />
+    
     <RouterView />
     <!-- 좋아요 한 영화 목록 보여주기 -->
     <div>
@@ -172,6 +175,8 @@ import axios from "axios";
 import UserLikeMovie from "@/components/Community/UserLikeMovie.vue";
 import UserReviewCard from "@/components/Community/UserReviewCard.vue";
 import UserLikeReview from "@/components/Community/UserLikeReview.vue";
+import UserRatingGraph from "@/components/Community/UserRatingGraph.vue";
+
 import { RouterView } from "vue-router";
 
 const store = useAccountStore();

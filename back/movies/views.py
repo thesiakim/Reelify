@@ -868,6 +868,30 @@ def follow_check(request, username):
     })
 
 
+# 유저 페이지 주인의 별점 평균 및 분포도 계산
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def review_graph(request, username):
+    user = get_object_or_404(User, username=username)
+    user_reviews = Review.objects.filter(user=user)
+    
+    # 평균 별점 계산
+    average_rating = user_reviews.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
+    
+    # 별점 분포 계산
+    rating_distribution = (
+        user_reviews.values('rating')
+        .annotate(count=Count('rating'))
+        .order_by('rating')
+    )
+    distribution_dict = {entry['rating']: entry['count'] for entry in rating_distribution}
+    
+    return Response({
+        "average_rating": round(average_rating, 2),  
+        "rating_distribution": distribution_dict,
+    })
+
+
 # 회원 탈퇴
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
