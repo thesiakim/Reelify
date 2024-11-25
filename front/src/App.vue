@@ -192,7 +192,7 @@ const logOut = function () {
               <li class="nav-item">
                 <RouterLink
                   class="routerlink"
-                  :to="{ name: 'MovieListView' }"
+                  :to="{ name: 'MovieListView', params: { page: 1 } }"
                   :class="{
                     'text-light': isHome || isDetail,
                     'text-dark': !isHome && !isDetail,

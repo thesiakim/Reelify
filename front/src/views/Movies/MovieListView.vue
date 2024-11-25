@@ -193,7 +193,7 @@
         />
       </div>
       <Pagination
-        class="d-flex justify-content-center"
+        class="custom-pagination d-flex justify-content-center"
         :current-page="currentPage"
         :total-pages="totalPages"
         :page-group="pageGroup"
@@ -207,11 +207,14 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useAccountStore } from "@/stores/accounts";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import qs from "qs";
 import MovieCard from "@/components/Movies/MovieCard.vue";
 import Pagination from "@/components/Pagination.vue";
 
+const route = useRoute();
+const router = useRouter();
 const store = useAccountStore();
 const checkedCountry = ref([]);
 const checkedGenre = ref([]);
@@ -268,20 +271,22 @@ const loadMovies = (page = 1) => {
 
 // 페이지 변경 핸들러
 const handlePageChange = (page) => {
-  if (typeof page === "number") {
+  if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page;
+    router.push({ name: "MovieListView", params: { page } });
     loadMovies(page);
   }
 };
 
+// 페이지가 변경될 때마다 페이직 그룹 갱신
+watch(route, () => {
+  currentPage.value = Number(route.params.page) || 1;
+  loadMovies(currentPage.value);
+});
+
 // 초기 데이터 로드 (옵션으로 호출 가능)
 onMounted(() => {
   loadMovies();
-});
-
-// 페이지가 변경될 때마다 페이직 그룹 갱신
-watch(currentPage, () => {
-  pageGroup.value = Math.ceil(currentPage.value / groupSize.value);
 });
 </script>
 
@@ -291,13 +296,17 @@ watch(currentPage, () => {
   margin-bottom: 10px;
   border: 2px solid transparent;
   transition: border-color 0.3s;
+  background-color: #fef9f2;
 }
-
+.btn:hover {
+  background-color: aliceblue;
+}
 .btn:last-child {
   margin-right: 0;
 }
 .btn-check:checked + label {
-  border-color: #d2de32;
+  border-color: #aacb73;
+  background-color: #ffe3e3;
 }
 .listBtn {
   background-color: #febbcc;
