@@ -79,7 +79,7 @@
     </div>
     <div v-if="store.isLogin === false" class="mt-4 text-center">
       <h2>지금 여기서 나눠보세요</h2>
-      <RouterLink class="routerlink gradient-text" :to="{ name: 'SignUpView' }"
+      <RouterLink style="font-weight: bold;" class="routerlink gradient-text" :to="{ name: 'SignUpView' }"
         >Reelify 회원 되기</RouterLink
       >
     </div>
@@ -91,6 +91,7 @@
       <RouterLink
         class="routerlink gradient-text"
         :to="{ name: 'MovieListView' }"
+         style="font-weight: bold;"
         >Reelify 하러 가기</RouterLink
       >
     </div>

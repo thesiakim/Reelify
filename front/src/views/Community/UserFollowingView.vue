@@ -1,7 +1,10 @@
 <template>
   <div class="container my-3 text-center">
-    <h1>{{ route.params.username }}님의 팔로잉 목록👥</h1>
-    <hr>
+    <div class="d-flex flex-column ">
+      <h1>{{ route.params.username }}님의 팔로잉 목록👥</h1>
+      <button @click="goToUserFollower(route.params.username)" class="follow-list-btn ms-md-auto mt-3 mt-md-0">팔로워 목록</button>
+    </div>
+      <hr>
     <div v-if="userData.followings && userData.followings.length > 0">
       <UserFollowCard class="my-5" v-for="following in userData.followings" :key="following.id" :follow="following" @updateFollowStatus="handleFollowStatusUpdate" @removeFromList="removeFromList" />
     </div>
@@ -49,12 +52,24 @@ const goToMovieList = function () {
   router.push({name:"MovieListView"})
 }
 
-// 팔로우 상태 업데이트
+// 팔로워 목록 이동 함수
+const goToUserFollower = function (username) {
+  router.push({name: 'UserFollowerView', params: { username: username }})
+}
+
 
 </script>
 
 <style scoped>
 .goTo {
   cursor: pointer;
+}
+.follow-list-btn {
+  background-color: #BFECFF;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  height: 30px;
+  width: 100px;
 }
 </style>

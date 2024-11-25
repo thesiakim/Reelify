@@ -2,23 +2,23 @@
   <div class="container">
     <div class="detail-intro">
       <div class="d-flex flex-row">
-  <div class="movie-detail-img">
-    <img
-      class="moviePoster"
-      :src="store.getPosterPath(movieData.poster_path)"
-      alt="moviePoster"
-    />
-    <!-- 별점 분포 그래프 -->
-    <div class="rating-graph-container">
-      <p class="rating-graph-text">별점 그래프</p>
-      <canvas id="ratingChart"></canvas>
-    </div>
+    <div class="movie-detail-img">
+      <img
+        class="moviePoster"
+        :src="store.getPosterPath(movieData.poster_path)"
+        alt="moviePoster"
+      />
+      <!-- 별점 분포 그래프 -->
+      <div class="rating-graph-container">
+        <p class="rating-graph-text">별점 그래프</p>
+        <canvas id="ratingChart"></canvas>
+      </div>
     </div>
   <div
     class="movie-detail-content d-flex flex-column justify-content-center"
   >
     <!-- 영화 추천 -->
-    <div class="like-container" @click="likeMovie">
+    <div class="like-container mb-3" @click="likeMovie">
       <div class="like-heart">
         <span class="like-text">{{ isMovieLiked ? '💗' : '🖤' }}</span>
       </div>

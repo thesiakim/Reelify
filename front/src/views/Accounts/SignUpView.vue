@@ -2,8 +2,7 @@
   <div class="signup-container my-5 d-flex justify-content-center">
     <div class="signup-box">
       <h1 class="signup-title">회원가입</h1>
-      <form @submit.prevent="validateSignUp">
-
+      <form class="form-control" @submit.prevent="validateSignUp">
         <div class="form-group d-flex flex-column">
           <div class="d-flex align-items-center">
             <label for="email" class="me-2">이메일</label>
@@ -382,6 +381,9 @@ const showAlert = (message) => {
 
 <style scoped>
 .signup-box {
+  border-radius: 10px;
+  background: linear-gradient(to bottom, #ffccea, #fef9f2, #cde990);
+  margin-top: 50px;
   width: 40vw;
   min-height: 70vh;
   border: 3px solid #e0e0e0;

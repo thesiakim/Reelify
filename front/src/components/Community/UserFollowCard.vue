@@ -1,11 +1,14 @@
 <template>
-  <div class="card d-flex flex-row justify-content-center">
-    <img class="profile-img" @click="goToUserPage(follow.username)" :src="follow.profile_img" alt="프로필 이미지">
-    <div>{{ follow.username }}</div>
-    <div v-if="follow.username != store.userName">
-      <button @click="goFollowOrUnFollow(follow.username)" v-if="isFollow != null && isFollow === false">팔로우</button>
-      <button @click="goFollowOrUnFollow(follow.username)" v-else-if="isFollow != null && isFollow === true">팔로잉</button>
+  <div class="card-container">
+    <div class="card d-flex flex-row justify-content-center align-items-center ">
+      <img class="profile-img mx-4" @click="goToUserPage(follow.username)" :src="follow.profile_img" alt="프로필 이미지">
+      <div class="mx-4 follow-name">{{ follow.username }}</div>
+      <div class="mx-4" v-if="follow.username != store.userName">
+        <button class="follow-btn" @click="goFollowOrUnFollow(follow.username)" v-if="isFollow != null && isFollow === false">팔로우</button>
+        <button class="unFollow-btn" @click="goFollowOrUnFollow(follow.username)" v-else-if="isFollow != null && isFollow === true">팔로잉</button>
+      </div>
     </div>
+    <hr>
   </div>
 </template>
 
@@ -75,5 +78,26 @@ const goToUserPage = function (username) {
   border: 1px solid #ddd;
   cursor: pointer;
   /* margin-bottom: 10px; */
+}
+.follow-btn { 
+  background-color: #F8F6E3;
+  color: gray;
+  border-color: transparent;
+  border-radius: 8px;
+  font-size: 20px;
+}
+.unFollow-btn {
+  background-color: #a1eebd;
+  color: white;
+  border-color: transparent;
+  border-radius: 8px;
+  font-size: 20px;
+}
+.card {
+  border: none;
+  margin-bottom: 40px;
+}
+.follow-name {
+  font-size: 20px;
 }
 </style>
