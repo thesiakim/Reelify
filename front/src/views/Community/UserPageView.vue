@@ -1,14 +1,23 @@
 <template>
-  <div v-if="userData" class="container my-5">
+  <div v-if="userData && userData.username" class="container my-5">
     <h1 class="text-center mt-3">{{ userData.username }}의 영화 취향</h1>
     <div
       class="user-profile d-flex flex-row justify-content-between align-items-center"
     >
-      <img
-        :src="`${store.API_URL}${userData.profile_img}`"
-        class="user-img"
-        alt="profile_img"
-      />
+      <div class="position-relative">
+        <img
+          :src="`${store.API_URL}${userData.profile_img}`"
+          class="user-img"
+          alt="profile_img"
+        />
+        <button
+          v-if="userData.username === store.userName"
+          @click="goToImageEdit(userData.username)"
+          class="position-absolute bottom-0 end-0 mb-2 me-2 badge rounded-pill"
+        >
+          편집
+        </button>
+      </div>
       <div class="profile-text text-center">
         <h3 class="mb-4">{{ userData.username }}</h3>
         <div class="follow-text d-flex flex-row mx-2">
@@ -47,7 +56,7 @@
           store.isLogin === true && store.userName === userData.username
         "
       >
-        <button class="update-btn" @click="goToUpdate(store.userName)">
+        <button class="update-btn" @click="goToUpdate(userData.username)">
           내 정보 수정
         </button>
       </div>
@@ -87,7 +96,7 @@
     </div>
 
     <UserRatingGraph />
-    
+
     <RouterView />
     <!-- 좋아요 한 영화 목록 보여주기 -->
     <div>
@@ -135,8 +144,11 @@
           userData.liked_reviews.length > 3
         "
       >
-        <button @click="goToUserLikeReview(userData.username)">
-          전체 리뷰 / 댓글 보기
+        <button
+          class="click-btn"
+          @click="goToUserLikeReview(userData.username)"
+        >
+          전체 리뷰 / 댓글 보기 +{{ likeReviewCnt }}
         </button>
       </div>
       <div
@@ -331,6 +343,12 @@ const goToUserFollowing = function (username) {
 const goToUpdate = function (username) {
   router.push({ name: "UserUpdateView", params: { username: username } });
 };
+
+// 내 프로필 이미지 수정 페이지 이동 함수
+const goToImageEdit = function (username) {
+  console.log(userData.username);
+  router.push({ name: "UserProfileEditView", params: { username: username } });
+};
 </script>
 
 <style scoped>
@@ -382,6 +400,10 @@ const goToUpdate = function (username) {
 }
 .likeReview-cnt:hover {
   background-color: #a1eebd;
+}
+.badge {
+  background-color: aliceblue;
+  color: black;
 }
 @media (max-width: 768px) {
   .profile-text {

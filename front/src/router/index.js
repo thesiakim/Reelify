@@ -17,6 +17,7 @@ import UserFollowerView from "@/views/Community/UserFollowerView.vue";
 import UserFollowingView from "@/views/Community/UserFollowingView.vue";
 import UserUpdateView from "@/views/Accounts/UserUpdateView.vue";
 import { useAccountStore } from "@/stores/accounts";
+import UserProfileEditView from "@/views/Community/UserProfileEditView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -49,14 +50,6 @@ const router = createRouter({
       name: "MovieListView",
       component: MovieListView,
       props: true,
-      beforeEnter: (to, from, next) => {
-        const store = useAccountStore();
-        if (!store.isLogin) {
-          next({ name: "HomeView" });
-        } else {
-          next();
-        }
-      },
     },
     {
       path: "/movie-detail/:movie_id",
@@ -127,6 +120,14 @@ const router = createRouter({
       name: "UserPageView",
       component: UserPageView,
       props: true,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/:username/user-review-list",
@@ -184,6 +185,19 @@ const router = createRouter({
       path: "/:username/user-update",
       name: "UserUpdateView",
       component: UserUpdateView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
+    },
+    {
+      path: "/:username/profile-img-edit",
+      name: "UserProfileEditView",
+      component: UserProfileEditView,
       beforeEnter: (to, from, next) => {
         const store = useAccountStore();
         if (!store.isLogin) {
