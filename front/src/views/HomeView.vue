@@ -48,12 +48,12 @@
         </div>
         <div class="carousel-item">
           <img
-            src="@/assets/Home/carouselImg3.jpeg"
+            src="@/assets/Home/carouselImg3.jpg"
             class="d-block w-100 carouselImg"
             alt="carouselImg3"
           />
           <div class="carousel-caption d-none d-md-block">
-            <h5 class="home-title">Reelify</h5>
+            <h3 class="home-title">Reelify</h3>
             <p class="home-content">지금 여기서</p>
           </div>
         </div>

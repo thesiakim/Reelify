@@ -96,9 +96,10 @@ onUpdated(() => {
 button {
   margin: 5px;
   padding: 10px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  background: #fff0f5;
+  border: 1px solid #ffe3e3;
   cursor: pointer;
+  border-radius: 8px;
 }
 
 button:disabled {
@@ -107,9 +108,9 @@ button:disabled {
 }
 
 button.active {
-  background-color: #007bff;
+  background-color: #ffd1da;
   color: white;
   font-weight: bold;
-  border-color: #007bff;
+  border-color: #fba1b7;
 }
 </style>

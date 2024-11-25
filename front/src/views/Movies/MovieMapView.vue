@@ -159,8 +159,30 @@ onMounted(() => {
 
 <template>
   <div class="container">
-    <h1>내 주변 영화관을 확인하세요</h1>
-    <div ref="mapContainer" style="width: 100%; height: 70vh"></div>
-    <MovieMapDetail :mapInstance="mapInstance" :theaters="theaters" />
+    <h1>내 주변 영화관을 확인하세요&#127916;</h1>
+    <div
+      class="mt-4 movie-map"
+      ref="mapContainer"
+      style="width: 100%; height: 70vh; border: none !important"
+    ></div>
+    <MovieMapDetail
+      class="movie-container"
+      :mapInstance="mapInstance"
+      :theaters="theaters"
+    />
   </div>
 </template>
+
+<style scoped>
+.movie-container {
+  border: none;
+}
+.movie-map {
+  border: none !important;
+  box-shadow: none !important;
+}
+.movie-map ::v-deep {
+  border: none !important;
+  box-shadow: none !important;
+}
+</style>

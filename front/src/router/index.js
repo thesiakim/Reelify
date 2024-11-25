@@ -16,6 +16,7 @@ import UserLikeReviewView from "@/views/Community/UserLikeReviewView.vue";
 import UserFollowerView from "@/views/Community/UserFollowerView.vue";
 import UserFollowingView from "@/views/Community/UserFollowingView.vue";
 import UserUpdateView from "@/views/Accounts/UserUpdateView.vue";
+import { useAccountStore } from "@/stores/accounts";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,11 +35,28 @@ const router = createRouter({
       path: "/account-update",
       name: "AccountUpdateView",
       component: AccountUpdateView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
-      path: "/movie-list",
+      path: "/movie-list/:page?",
       name: "MovieListView",
       component: MovieListView,
+      props: true,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/movie-detail/:movie_id",
@@ -59,11 +77,27 @@ const router = createRouter({
       path: "/:movie_id/review-create",
       name: "ReviewCreateView",
       component: ReviewFormView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/:review_id/review-update",
       name: "ReviewUpdateView",
       component: ReviewFormView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/movie-map",
@@ -74,6 +108,14 @@ const router = createRouter({
       path: "/movie-recommended",
       name: "MovieRecommendedView",
       component: MovieRecommendedView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/movie-legendary",
@@ -90,26 +132,66 @@ const router = createRouter({
       path: "/:username/user-review-list",
       name: "UserReviewListView",
       component: UserReviewListView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/:username/user-follower",
       name: "UserFollowerView",
       component: UserFollowerView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/:username/user-following",
       name: "UserFollowingView",
       component: UserFollowingView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/:username/user-like-review",
       name: "UserLikeReviewView",
       component: UserLikeReviewView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
     {
       path: "/:username/user-update",
       name: "UserUpdateView",
       component: UserUpdateView,
+      beforeEnter: (to, from, next) => {
+        const store = useAccountStore();
+        if (!store.isLogin) {
+          next({ name: "HomeView" });
+        } else {
+          next();
+        }
+      },
     },
   ],
   scrollBehavior(to, from, savedPosition) {
