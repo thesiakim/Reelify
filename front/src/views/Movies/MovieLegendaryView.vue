@@ -1,8 +1,8 @@
 <template>
   <div class="container mt-3s">
     <h1>👑명예의 전당👑</h1>
-    <div class="d-flex flex-row justify-content-evenly">
-      <div>
+    <div class="d-flex flex-column justify-content-evenly">
+      <div class="poster-section text-center">
         <div class="topMovie">
           <div class="image-slider">
             <Transition name="fade" mode="out-in">
@@ -16,30 +16,35 @@
                 alt="img"
               />
             </Transition>
-            <!-- 영화 제목에 대한 Transition -->
+          </div>
+          <!-- 영화 제목에 대한 Transition -->
+          <div class="topTitle">
+            <Transition name="fade" mode="out-in">
+              <p
+                v-if="topMovieList.length > 0"
+                class="tran-text"
+                :key="currentIndex"
+              >
+                <!-- {{ currentIndex + 1 }} -->
+                <span v-if="currentIndex === 0">🥇</span>
+                <span v-else-if="currentIndex === 1">🥈</span>
+                <span v-else-if="currentIndex === 2">🥉</span>
+                <span v-else>🏅</span>
+                {{ topMovieList[currentIndex]?.original_title }}
+              </p>
+            </Transition>
           </div>
         </div>
-        <div class="topTitle">
-          <Transition name="fade" mode="out-in">
-            <p
-              v-if="topMovieList.length > 0"
-              class="tran-text"
-              :key="currentIndex"
-            >
-              <!-- {{ currentIndex + 1 }} -->
-              <span v-if="currentIndex === 0">🥇</span>
-              <span v-else-if="currentIndex === 1">🥈</span>
-              <span v-else-if="currentIndex === 2">🥉</span>
-              <span v-else>🏅</span>
-              {{ topMovieList[currentIndex]?.original_title }}
-            </p>
-          </Transition>
-        </div>
       </div>
-      <div class="topMovie topList d-flex justify-content-center flex-column">
-        <p v-for="(movie, index) in topMovieList" :key="movie.id">
-          {{ index + 1 }}위. {{ movie.original_title }}
-        </p>
+      <hr class="my-4" />
+      <!-- 순위 목록 섹션 -->
+      <div class="rank-section my-4">
+        <h2>🏆 어제의 박스오피스 순위 🏆</h2>
+        <div class="topMovie topList d-flex align-items-center flex-column">
+          <p class="movie-title" v-for="(movie, index) in topMovieList" :key="movie.id">
+            {{ index + 1 }}위. {{ movie.original_title }}
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -85,7 +90,7 @@ watch(topMovieList, (newList) => {
   text-align: center;
 }
 .topMovie {
-  margin-top: 8vh;
+  margin-top: 4vh;
 }
 
 .image-slider {
@@ -95,6 +100,7 @@ watch(topMovieList, (newList) => {
   aspect-ratio: 2 / 3;
   margin: 0 auto;
   overflow: hidden;
+  text-align: center;
 }
 
 .image-slider img {
@@ -113,8 +119,14 @@ watch(topMovieList, (newList) => {
   color: #333;
   opacity: 0;
   transition: opacity 4s ease;
+  word-wrap: break-word;
+  word-break: break-word;
+  text-align: center;
+  max-width: 100%;
 }
-
+.movie-title {
+  font-size: 20px;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 2s ease, transform 2s ease;

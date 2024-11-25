@@ -2,11 +2,11 @@
   <div class="container text-center d-flex flex-column align-items-center my-3">
     <h1>내 정보 수정</h1>
     <div class="form-container d-flex flex-column justify-content-center">
+      <h3 class="mb-4">비밀번호 변경</h3>
       <form
-        class="d-flex align-items-center flex-column"
+        class="form-control d-flex align-items-center flex-column"
         @submit.prevent="accountUpdate"
       >
-        <h3>비밀번호 변경</h3>
         <div class="form-group mt-3">
           <label class="mb-2" for="oldPassword">기존 비밀번호</label><br />
           <input
@@ -126,17 +126,25 @@ const accountUpdate = function () {
 .form-container {
   border-radius: 10px;
   background: linear-gradient(to bottom, #ffccea, #fef9f2, #cde990);
+  background-color: #f9f9fe;
   margin-top: 50px;
-  width: 430px;
-  height: 450px;
+  width: 36vw;
+  min-height: 70vh;
+  padding: 30px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+  border: 3px solid #e0e0e0;
+  text-align: center;
 }
 .form-group {
-  width: 380px;
+  width: 80%;
   font-weight: bold;
 }
 .form-control {
   width: 100%;
+  padding: 10px;
+  margin-bottom: 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
 }
 
 .form-control:focus {
@@ -146,7 +154,7 @@ const accountUpdate = function () {
 }
 .updatae-btn {
   border: transparent;
-  border-radius: 10px;
+  border-radius: 5px;
   background-color: #a1eebd;
   color: white;
   font-weight: bold;

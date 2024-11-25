@@ -40,7 +40,7 @@
           <div class="movie-det">상영시간: {{ movieRuntime }}분</div>
         </div>
         <section>
-          <div class="mb-3">감상 가능 ott</div>
+          <div class="possible-ott mb-3">감상 가능 ott</div>
           <ul class="ott-ul">
             <li
               class="ott-li"
@@ -162,6 +162,10 @@ onMounted(() => {
 }
 .movie-origin-tit {
   font-weight: bold;
+  font-size: 2rem;
+}
+.movie-det {
+  font-size: 18px;
 }
 .provider-logo {
   background-position: 50%;
@@ -184,5 +188,8 @@ onMounted(() => {
 }
 .ott-li:last-child {
   margin-right: 0px;
+}
+.possible-ott {
+  font-size: 18px;
 }
 </style>

@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 import SignUpView from "@/views/Accounts/SignUpView.vue";
-import AccountUpdateView from "@/views/Accounts/AccountUpdateView.vue";
 import MovieListView from "@/views/Movies/MovieListView.vue";
 import MovieDetailView from "@/views/Movies/MovieDetailView.vue";
 import MovieSearchView from "@/views/Movies/MovieSearchView.vue";
@@ -31,19 +30,6 @@ const router = createRouter({
       path: "/sign-up",
       name: "SignUpView",
       component: SignUpView,
-    },
-    {
-      path: "/account-update",
-      name: "AccountUpdateView",
-      component: AccountUpdateView,
-      beforeEnter: (to, from, next) => {
-        const store = useAccountStore();
-        if (!store.isLogin) {
-          next({ name: "HomeView" });
-        } else {
-          next();
-        }
-      },
     },
     {
       path: "/movie-list/:page?",
@@ -101,14 +87,6 @@ const router = createRouter({
       path: "/movie-recommended",
       name: "MovieRecommendedView",
       component: MovieRecommendedView,
-      beforeEnter: (to, from, next) => {
-        const store = useAccountStore();
-        if (!store.isLogin) {
-          next({ name: "HomeView" });
-        } else {
-          next();
-        }
-      },
     },
     {
       path: "/movie-legendary",

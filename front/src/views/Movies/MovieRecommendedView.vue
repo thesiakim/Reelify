@@ -7,7 +7,7 @@
   </div>
   <div v-else class="container my-3 d-flex flex-column justify-content-center align-items-center vh-100">
     <h1>Reelify가 추천하는 영화를 알고싶나요?</h1>
-    <h3>그렇다면 Reelify의 회원이 되어보세요!!</h3>
+    <h3>그렇다면 Reelify의 회원이 되어보세요!</h3>
     <h4 class="gradient-text" @click="goToSignUpView">Reelify 회원 되기</h4>
   </div>
 </template>
