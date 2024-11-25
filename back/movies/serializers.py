@@ -216,6 +216,8 @@ class MyPageSerializer(serializers.ModelSerializer):
             {
                 'id': review.id,
                 'content': review.content,
+                'rating': review.rating,
+                'is_spoiler': review.is_spoiler,
                 'movie': {
                     'id': review.movie.id,
                     'title': review.movie.title,
