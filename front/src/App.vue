@@ -43,6 +43,10 @@ onMounted(() => {
       modalInstance.hide();
     }
   }
+  // 라우트 변경 시 자동완성 드롭다운 초기화
+  router.afterEach(() => {
+    autocompleteResults.value = [];
+  });
 });
 // 라우트에 따라 navbar의 position을 다르게 설정
 const navbarPositionClass = computed(() => {
@@ -260,7 +264,7 @@ const logOut = function () {
                 <li
                   v-for="(result, index) in autocompleteResults"
                   :key="result.id"
-                  class="list-group-item list-group-item-action"
+                  class="list-group-item list-group-item-action autocomplete-item"
                   :class="{ active: index === activeIndex }"
                   @click="selectAutocomplete(result.title)"
                 >
@@ -359,7 +363,9 @@ const logOut = function () {
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
-
+.list-group-item {
+  text-shadow: none !important;
+}
 .text-dark {
   color: black !important;
 }
@@ -395,5 +401,11 @@ const logOut = function () {
 .active {
   background-color: #f0c8d2;
   color: white;
+}
+
+.autocomplete-item {
+  font-size: 14px; 
+  color: #333; 
+  font-weight: normal; 
 }
 </style>

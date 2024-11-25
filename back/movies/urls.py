@@ -25,15 +25,14 @@ urlpatterns = [
     path('recommend/', views.recommend_movies),                                         # 영화 추천 알고리즘
 
     path('profile-image/', views.update_profile_image),                                 # 회원 이미지 변경 
+    path('user-page/<str:username>/preferred_genres/', views.preferred_genres),         # 유저 페이지 주인의 선호 장르 
     path('user-page/<str:username>/follow-check/', views.follow_check),                 # 유저 페이지 주인의 팔로우, 팔로잉 목록 확인
     path('user-page/<str:username>/review-graph/', views.review_graph),                 # 유저 페이지 주인의 평균 별점 및 그래프 
     path('user-page/<str:username>/', views.user_page),                                 # 회원 페이지 
-    
     path('user/<str:username>/follow/', views.toggle_follow),                           # 팔로우, 언팔로우
-    path('user/<int:movie_pk>/is_liked/', views.is_liked),                              # 유저의 영화 추천 여부 확인 (화면 렌더링 시 호출하여 동적으로 아이콘 변경)
     path('user/<str:username>/is_follow/', views.is_follow),                            # 유저페이지 주인 팔로우 여부 확인
+    path('user/<int:movie_pk>/is_liked/', views.is_liked),                              # 유저의 영화 추천 여부 확인 (화면 렌더링 시 호출하여 동적으로 아이콘 변경)
     
     path('user/delete/', views.delete),                                                 # 회원 탈퇴 
-
     path('email-verification/', views.send_verification_code),                          # 회원 가입 시 이메일 인증
 ]
