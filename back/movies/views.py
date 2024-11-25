@@ -1,14 +1,13 @@
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.cache import cache
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.contrib.auth import get_user_model
-from django.db import connection
-from django.db.models import Avg, Count, Max, Q, Prefetch, FloatField, OuterRef, Subquery, F, ExpressionWrapper, Sum, Value
-from django.db.models.functions import Coalesce
+from django.utils.html import strip_tags
+from django.db.models import Avg, Count, Q, Prefetch, F
 from datetime import datetime, timedelta
-from collections import OrderedDict, Counter, defaultdict
-from itertools import chain
+from collections import defaultdict
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import NotFound
 from rest_framework.decorators import api_view, permission_classes
@@ -19,10 +18,7 @@ from rest_framework import status
 
 from movies.models import Movie, Country, Genre, Review, Comment, Actor, Director
 from .serializers import MovieListSerializer, MovieDetailSerializer, ReviewListSerializer, ReviewSerializer, CommentListSerializer, CommentSerializer, MyPageSerializer, UserSerializer, GenreSerializer
-from sklearn.metrics.pairwise import cosine_similarity
-from scipy.sparse import csr_matrix
 from scipy.spatial.distance import cosine
-from heapq import nlargest
 import re, random, requests
 import numpy as np
 
@@ -796,8 +792,9 @@ def update_profile_image(request):
     
     user.profile_img = profile_img
     user.save()
+    profile_img_url = request.build_absolute_uri(user.profile_img.url)
     
-    return Response(status=status.HTTP_200_OK)
+    return Response({'profile_img': profile_img_url}, status=status.HTTP_200_OK)
 
 
 # 유저 페이지 
@@ -915,7 +912,6 @@ def preferred_genres(request, username):
     return Response(serializer.data)
 
 
-
 # 회원 탈퇴
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -924,6 +920,7 @@ def delete(request):
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+# 회원 가입 시 이메일 인증 코드 전송
 @api_view(['POST'])
 def send_verification_code(request):
     email = request.data.get('email')
@@ -934,12 +931,17 @@ def send_verification_code(request):
     verification_code = random.randint(100000, 999999)
     cache.set(email, verification_code, timeout=300)  # 인증번호를 5분간 유효
 
-    # 이메일 발송
-    send_mail(
+    # HTML 템플릿 렌더링
+    html_content = render_to_string('emails/verification_email.html', {'verification_code': verification_code})
+    text_content = strip_tags(html_content)  
+
+    email_message = EmailMultiAlternatives(
         subject="회원가입 인증번호",
-        message=f"안녕하세요, Reelify 입니다. 인증번호 {verification_code}를 입력해주세요!",
+        body=text_content,  
         from_email="s20230404@gmail.com",  
-        recipient_list=[email],
+        to=[email],
     )
+    email_message.attach_alternative(html_content, "text/html")  
+    email_message.send()  # 이메일 발송
 
     return Response({"message": "인증번호가 이메일로 발송되었습니다."}, status=status.HTTP_200_OK)
