@@ -1,18 +1,13 @@
 <template>
   <div class="container">
     <div class="detail-intro">
-      <div class="d-flex flex-row">
+      <div class="d-flex flex-row mb-5">
         <div class="movie-detail-img">
           <img
             class="moviePoster"
             :src="store.getPosterPath(movieData.poster_path)"
             alt="moviePoster"
           />
-          <!-- 별점 분포 그래프 -->
-          <div class="rating-graph-container">
-            <p class="rating-graph-text">별점 그래프</p>
-            <canvas id="ratingChart"></canvas>
-          </div>
         </div>
         <div
           class="movie-detail-content d-flex flex-column justify-content-center"
@@ -33,6 +28,18 @@
           </div>
         </div>
       </div>
+      <hr />
+      <div>
+        <h3>"{{ movieData.title }}"의 별점 분석🌠</h3>
+        <div class="d-flex justify-content-center align-content-center">
+          <!-- 별점 분포 그래프 -->
+          <div class="rating-graph-container">
+            <p class="rating-graph-text">별점 그래프</p>
+            <canvas class="rating-chart" id="ratingChart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <!-- 출연진 소개 -->
       <div class="mt-5">
         <hr />
@@ -44,7 +51,7 @@
               class="col-12 col-md-6 col-lg-3 d-flex flex-column justify-content-center align-items-center mb-4"
               v-for="director in movieData.directors"
               :key="director.id"
-               @click="openPersonModal('director', director.id, director.name)"
+              @click="openPersonModal('director', director.id, director.name)"
             >
               <img
                 :src="store.getPosterPath(director.profile_path)"
@@ -80,7 +87,7 @@
           :personType="selectedPersonType"
           :personName="selectedPersonName"
           @close="closePersonModal"
-    />
+        />
       </div>
 
       <!-- 리뷰 -->
@@ -508,7 +515,7 @@ onMounted(() => {
 const isPersonOpen = ref(false);
 const selectedPersonId = ref(null);
 const selectedPersonType = ref("");
-const selectedPersonName = ref("")
+const selectedPersonName = ref("");
 
 const openPersonModal = (type, id, name) => {
   selectedPersonType.value = type;
@@ -523,9 +530,7 @@ const closePersonModal = () => {
   selectedPersonId.value = null;
   selectedPersonType.value = "";
   selectedPersonName.value = "";
-
 };
-
 </script>
 
 <style scoped>
@@ -726,6 +731,8 @@ const closePersonModal = () => {
   justify-content: center; /* 세로로 중앙 정렬 */
   margin-top: 20px; /* 상단 간격 */
   padding: 10px; /* 내부 여백 */
+  width: 500px;
+  height: 350px;
 }
 
 /* 버튼 스타일 */
