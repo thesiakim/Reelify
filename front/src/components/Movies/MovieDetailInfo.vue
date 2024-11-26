@@ -44,6 +44,7 @@
               class="col-12 col-md-6 col-lg-3 d-flex flex-column justify-content-center align-items-center mb-4"
               v-for="director in movieData.directors"
               :key="director.id"
+               @click="openPersonModal('director', director.id, director.name)"
             >
               <img
                 :src="store.getPosterPath(director.profile_path)"
@@ -60,6 +61,7 @@
               class="movie-actors col-12 col-md-6 col-lg-3 d-flex flex-column justify-content-center align-items-center mb-4"
               v-for="actor in movieData.actors"
               :key="actor.id"
+              @click="openPersonModal('actor', actor.id, actor.name)"
             >
               <img
                 :src="store.getPosterPath(actor.profile_path)"
@@ -72,6 +74,13 @@
             </div>
           </div>
         </div>
+        <MoviePersonModal
+          :isOpen="isPersonOpen"
+          :personId="selectedPersonId"
+          :personType="selectedPersonType"
+          :personName="selectedPersonName"
+          @close="closePersonModal"
+    />
       </div>
 
       <!-- 리뷰 -->
@@ -194,6 +203,8 @@ import "swiper/swiper-bundle.css";
 import ReviewCard from "./ReviewCard.vue";
 import MovieRelatedVideo from "./MovieRelatedVideo.vue";
 import CustomAlertModal from "../CustomAlertModal.vue";
+import MoviePersonModal from "./MoviePersonModal.vue";
+
 const store = useAccountStore();
 
 const props = defineProps({
@@ -493,6 +504,28 @@ onMounted(() => {
     loadRatingData();
   }
 });
+
+const isPersonOpen = ref(false);
+const selectedPersonId = ref(null);
+const selectedPersonType = ref("");
+const selectedPersonName = ref("")
+
+const openPersonModal = (type, id, name) => {
+  selectedPersonType.value = type;
+  selectedPersonId.value = id;
+  selectedPersonName.value = name;
+  isPersonOpen.value = true;
+};
+
+const closePersonModal = () => {
+  console.log("closePersonModal 호출");
+  isPersonOpen.value = false;
+  selectedPersonId.value = null;
+  selectedPersonType.value = "";
+  selectedPersonName.value = "";
+
+};
+
 </script>
 
 <style scoped>
