@@ -79,4 +79,12 @@ onMounted(() => {
 .search-title {
   margin-bottom: 40px;
 }
+
+h1 {
+  text-align: center;
+  font-weight: bold;
+  background: linear-gradient(to left, #ffccea, #a1eebd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 </style>

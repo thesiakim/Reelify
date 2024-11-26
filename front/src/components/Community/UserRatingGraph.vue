@@ -115,7 +115,7 @@ const initChart = async () => {
       tooltip: {
         enabled: true,
         callbacks: {
-          label: (context) => `${context.parsed.y}명`,
+          label: (context) => `${context.parsed.y}개`,
         },
       },
       datalabels: {
