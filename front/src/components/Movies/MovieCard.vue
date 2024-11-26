@@ -43,6 +43,8 @@ const moveToDetail = function (movieId) {
   background-color: transparent;
 }
 .card-text {
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  color: gray;
 }
 </style>

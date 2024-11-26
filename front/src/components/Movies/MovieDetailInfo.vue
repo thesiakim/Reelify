@@ -2,43 +2,44 @@
   <div class="container">
     <div class="detail-intro">
       <div class="d-flex flex-row">
-    <div class="movie-detail-img">
-      <img
-        class="moviePoster"
-        :src="store.getPosterPath(movieData.poster_path)"
-        alt="moviePoster"
-      />
-      <!-- 별점 분포 그래프 -->
-      <div class="rating-graph-container">
-        <p class="rating-graph-text">별점 그래프</p>
-        <canvas id="ratingChart"></canvas>
+        <div class="movie-detail-img">
+          <img
+            class="moviePoster"
+            :src="store.getPosterPath(movieData.poster_path)"
+            alt="moviePoster"
+          />
+          <!-- 별점 분포 그래프 -->
+          <div class="rating-graph-container">
+            <p class="rating-graph-text">별점 그래프</p>
+            <canvas id="ratingChart"></canvas>
+          </div>
+        </div>
+        <div
+          class="movie-detail-content d-flex flex-column justify-content-center"
+        >
+          <!-- 영화 추천 -->
+          <div class="like-container mb-3" @click="likeMovie">
+            <div class="like-heart">
+              <span class="like-text">{{ isMovieLiked ? "💗" : "🖤" }}</span>
+            </div>
+            <div class="like-message">
+              총 <span class="likes-count">{{ likes_count }}</span
+              >명이 추천했어요!
+            </div>
+          </div>
+          <div>{{ movieData.overview }}</div>
+          <div class="movie-tagline gradient-text">
+            "{{ movieData.tagline }}"
+          </div>
+        </div>
       </div>
-    </div>
-  <div
-    class="movie-detail-content d-flex flex-column justify-content-center"
-  >
-    <!-- 영화 추천 -->
-    <div class="like-container mb-3" @click="likeMovie">
-      <div class="like-heart">
-        <span class="like-text">{{ isMovieLiked ? '💗' : '🖤' }}</span>
-      </div>
-      <div class="like-message">
-        총 <span class="likes-count">{{ likes_count }}</span>명이 추천했어요!
-      </div>
-    </div>
-    <div>{{ movieData.overview }}</div>
-    <div class="movie-tagline gradient-text">
-      "{{ movieData.tagline }}"
-    </div>
-  </div>
-</div>
       <!-- 출연진 소개 -->
       <div class="mt-5">
         <hr />
         <h2>출연 / 제작</h2>
-        <div class="movie-making">
-          <p>감독</p>
-          <div class="d-flex flex-wrap justify-content-start">
+        <div class="movie-making mt-4">
+          <h4>감독</h4>
+          <div class="d-flex flex-wrap justify-content-start mt-4">
             <div
               class="col-12 col-md-6 col-lg-3 d-flex flex-column justify-content-center align-items-center mb-4"
               v-for="director in movieData.directors"
@@ -48,13 +49,13 @@
                 :src="store.getPosterPath(director.profile_path)"
                 alt="directorImg"
               />
-              <span>
+              <span class="director-name mt-2">
                 {{ director.name }}
               </span>
             </div>
           </div>
-          <p>배우</p>
-          <div class="d-flex flex-wrap justify-content-start">
+          <h4>배우</h4>
+          <div class="d-flex flex-wrap justify-content-start mt-4">
             <div
               class="movie-actors col-12 col-md-6 col-lg-3 d-flex flex-column justify-content-center align-items-center mb-4"
               v-for="actor in movieData.actors"
@@ -65,7 +66,7 @@
                 alt="actorImg"
                 class="actor-img"
               />
-              <span class="actor-name">
+              <span class="actor-name mt-2">
                 {{ actor.name }}
               </span>
             </div>
@@ -78,7 +79,11 @@
         <hr />
         <div class="review-top d-flex flex-row mb-4">
           <h2>리뷰</h2>
-          <button v-if="store.isLogin === true" class="create-btn click-btn" @click="goToReviewForm">
+          <button
+            v-if="store.isLogin === true"
+            class="create-btn click-btn"
+            @click="goToReviewForm"
+          >
             리뷰 작성하기
           </button>
         </div>
@@ -88,9 +93,13 @@
         <div v-if="movieData.top_reviews && movieData.top_reviews.length > 0">
           <div
             class="d-flex justify-content-end"
-            v-if="movieData.has_more_reviews && movieData.id && reviewCnt != null"
+            v-if="
+              movieData.has_more_reviews && movieData.id && reviewCnt != null
+            "
           >
-            <button class="mb-4 click-btn" @click="goToReviewList">전체 리뷰 보기 +{{ reviewCnt }}</button>
+            <button class="mb-4 click-btn" @click="goToReviewList">
+              전체 리뷰 보기 +{{ reviewCnt }}
+            </button>
           </div>
           <div class="review-container">
             <ReviewCard
@@ -109,7 +118,10 @@
       <div>
         <hr />
         <h2>관련 영상</h2>
-        <div v-if="movieData && movieData.videos && movieData.videos.length > 2" class="swiper-container" >
+        <div
+          v-if="movieData && movieData.videos && movieData.videos.length > 2"
+          class="swiper-container"
+        >
           <swiper
             :slides-per-view="2"
             :space-between="40"
@@ -117,7 +129,7 @@
             class="thumbnail-swiper"
           >
             <swiper-slide
-            v-for="(video, index) in movieData.videos"
+              v-for="(video, index) in movieData.videos"
               :key="video.id"
               class="thumbnail"
               @click="openModal(video.key)"
@@ -130,7 +142,6 @@
             </swiper-slide>
           </swiper>
 
-
           <MovieRelatedVideo
             v-if="isModalOpen"
             :isOpen="isModalOpen"
@@ -138,13 +149,20 @@
             :activeVideoUrl="activeVideoUrl"
           />
         </div>
-        <div v-else-if="movieData && movieData.videos && movieData.videos.length <= 2" class="notmany my-4 d-flex justify-content-center">
-          <img v-for="(video, index) in movieData.videos"
-              :key="video.id"
-              @click="openModal(video.key)"
-              class="thumbnail-img2 mx-3" 
-              :src="`https://img.youtube.com/vi/${video.key}/0.jpg`" 
-              :alt="`Thumbnail ${index + 1}`"/>
+        <div
+          v-else-if="
+            movieData && movieData.videos && movieData.videos.length <= 2
+          "
+          class="notmany my-4 d-flex justify-content-center"
+        >
+          <img
+            v-for="(video, index) in movieData.videos"
+            :key="video.id"
+            @click="openModal(video.key)"
+            class="thumbnail-img2 mx-3"
+            :src="`https://img.youtube.com/vi/${video.key}/0.jpg`"
+            :alt="`Thumbnail ${index + 1}`"
+          />
           <MovieRelatedVideo
             v-if="isModalOpen"
             :isOpen="isModalOpen"
@@ -160,7 +178,6 @@
       @close="closeAlert"
     />
   </div>
-  
 </template>
 
 <script setup>
@@ -170,8 +187,8 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import Chart from "chart.js/auto";
-import "swiper/css"
-import "swiper/css/scrollbar"
+import "swiper/css";
+import "swiper/css/scrollbar";
 import "swiper/swiper-bundle.css";
 
 import ReviewCard from "./ReviewCard.vue";
@@ -190,12 +207,15 @@ const videosList = ref([]);
 const router = useRouter();
 
 const likes_count = ref(0);
-const isMovieLiked = ref(false); 
+const isMovieLiked = ref(false);
 const showAlert = ref(false);
 const alertMessage = ref("");
 
 const goToReviewForm = () => {
-  router.push({ name: "ReviewCreateView", params: { movie_id: movieId.value } });
+  router.push({
+    name: "ReviewCreateView",
+    params: { movie_id: movieId.value },
+  });
 };
 
 const goToReviewList = () => {
@@ -250,7 +270,7 @@ const fetchMovieLikeStatus = async () => {
   }
 };
 
-// 추천 토글 
+// 추천 토글
 const likeMovie = async () => {
   if (!store.isLogin) {
     alertMessage.value = "로그인한 회원만 추천할 수 있습니다.";
@@ -275,8 +295,7 @@ const likeMovie = async () => {
   }
 };
 
-const reviewCnt = ref(null)
-
+const reviewCnt = ref(null);
 
 // props 변화 또는 초기 렌더링 시 데이터 로드
 watch(
@@ -287,23 +306,21 @@ watch(
       likes_count.value = newMovieData.likes_count;
       fetchMovieLikeStatus(); // 추천 여부 확인
       axios({
-      method: 'get',
-      url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
+        method: "get",
+        url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
       })
         .then((res) => {
-          console.log(res.data)
-          reviewCnt.value = res.data.reviews.count
-          console.log(reviewCnt.value)
+          console.log(res.data);
+          reviewCnt.value = res.data.reviews.count;
+          console.log(reviewCnt.value);
         })
         .catch((err) => {
-          console.log(err)
-        })
+          console.log(err);
+        });
     }
   },
-  { immediate: true } 
+  { immediate: true }
 );
-
-
 
 onMounted(() => {
   if (props.movieData && props.movieData.id) {
@@ -312,17 +329,17 @@ onMounted(() => {
     fetchMovieLikeStatus(); // 추천 여부 확인
 
     axios({
-    method: 'get',
-    url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
+      method: "get",
+      url: `${store.API_URL}/api/v1/movies/${props.movieData.id}/reviews/`,
     })
       .then((res) => {
-        console.log(res.data)
-        reviewCnt.value = res.data.reviews.count
-        console.log(reviewCnt.value)
+        console.log(res.data);
+        reviewCnt.value = res.data.reviews.count;
+        console.log(reviewCnt.value);
       })
       .catch((err) => {
-        console.log(err)
-      })
+        console.log(err);
+      });
   }
 });
 
@@ -376,11 +393,11 @@ const loadRatingData = async () => {
         aspectRatio: 2,
         layout: {
           padding: {
-            left: 20,   // 좌측 여백
-            right: 40,  // 우측 여백
-            top: 20,    // 상단 여백
-            bottom: 10  // 하단 여백
-          }
+            left: 20, // 좌측 여백
+            right: 40, // 우측 여백
+            top: 20, // 상단 여백
+            bottom: 10, // 하단 여백
+          },
         },
         plugins: {
           legend: {
@@ -404,7 +421,7 @@ const loadRatingData = async () => {
             },
             title: {
               display: false,
-            }
+            },
           },
           y: {
             grid: {
@@ -416,14 +433,15 @@ const loadRatingData = async () => {
             title: {
               display: false,
             },
-            border: {  // 이 부분을 추가
-              display: false
+            border: {
+              // 이 부분을 추가
+              display: false,
             },
-            suggestedMax: maxValue + (maxValue * 0.2),
-            suggestedMin: 0
+            suggestedMax: maxValue + maxValue * 0.2,
+            suggestedMin: 0,
           },
-        }
-              },
+        },
+      },
       plugins: [
         {
           id: "customMaxLabel",
@@ -431,34 +449,31 @@ const loadRatingData = async () => {
             const { ctx } = chart;
             const dataset = chart.data.datasets[0];
             const meta = chart.getDatasetMeta(0);
-            
+
             const maxValue = Math.max(...dataset.data);
             const maxIndex = dataset.data.indexOf(maxValue);
             const maxLabel = chart.data.labels[maxIndex];
-            
+
             const bar = meta.data[maxIndex];
             const x = bar.x;
             const y = bar.y;
-            
+
             ctx.save();
             ctx.fillStyle = "rgba(255, 99, 132, 1)";
             ctx.font = "bold 16px Arial";
             ctx.textAlign = "center";
             ctx.textBaseline = "bottom";
-            
+
             ctx.fillText(`${maxLabel}⭐`, x, y - 10);
             ctx.restore();
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
   } catch (error) {
     console.error("별점 데이터를 불러오는 중 오류:", error);
   }
 };
-
-
-
 
 // movieData 변경 감지 및 데이터 로드
 watch(
@@ -476,10 +491,8 @@ onMounted(() => {
   if (props.movieData && props.movieData.id) {
     movieId.value = props.movieData.id;
     loadRatingData();
-    }
   }
-);
-
+});
 </script>
 
 <style scoped>
@@ -526,7 +539,7 @@ onMounted(() => {
   background-position: 50%;
   background-size: 101%;
   border-radius: 50%;
-  width: 100px;
+  width: 90px;
   height: 100px;
   position: relative;
   overflow: hidden;
@@ -571,11 +584,9 @@ onMounted(() => {
 .thumbnail {
   height: 268px;
   cursor: pointer;
-
 }
 .notmany {
   height: 268px;
-
 }
 .thumbnail-img {
   width: 100%;
@@ -643,26 +654,26 @@ onMounted(() => {
 }
 /* 스크롤바 스타일 */
 /* swiper 기본 스타일과 스크롤바 스타일 추가 */
-@import 'swiper/css';
-@import 'swiper/css/scrollbar';  /* 스크롤바 스타일 */
+@import "swiper/css";
+@import "swiper/css/scrollbar"; /* 스크롤바 스타일 */
 
 .swiper-scrollbar {
-  height: 6px;               /* 스크롤바 높이 */
-  background: #eb6bcf !important;       /* 스크롤바 배경색 */
-  border-radius: 3px;        /* 스크롤바 둥글게 */
-  margin-top: 10px;          /* 스크롤바 위치 조정 */
+  height: 6px; /* 스크롤바 높이 */
+  background: #eb6bcf !important; /* 스크롤바 배경색 */
+  border-radius: 3px; /* 스크롤바 둥글게 */
+  margin-top: 10px; /* 스크롤바 위치 조정 */
 }
 
 .swiper-scrollbar-drag {
-  background: #007bff;       /* 스크롤바 드래그 색상 */
-  border-radius: 3px;        /* 드래그 핸들 둥글게 */
+  background: #007bff; /* 스크롤바 드래그 색상 */
+  border-radius: 3px; /* 드래그 핸들 둥글게 */
   width: 20px;
   height: 100%;
 }
 
 .swiper-scrollbar-drag.swiper-scrollbar-drag-moving {
-  background: #0056b3;       /* 드래그 버튼을 끌 때 색상 변경 */
-  transform: scale(1.2);      /* 드래그 버튼 확대 효과 */
+  background: #0056b3; /* 드래그 버튼을 끌 때 색상 변경 */
+  transform: scale(1.2); /* 드래그 버튼 확대 효과 */
 }
 
 /* 그래프 텍스트 스타일 */
@@ -691,5 +702,4 @@ onMounted(() => {
   border-color: transparent;
   border-radius: 8px;
 }
-
 </style>

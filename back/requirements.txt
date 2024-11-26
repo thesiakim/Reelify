@@ -59,7 +59,7 @@ multidict==6.1.0
 nest-asyncio==1.6.0
 numpy==2.0.2
 oauthlib==3.2.2
-openai==1.55.0
+openai==0.28.0
 packaging==24.1
 pandas==2.2.3
 parso==0.8.4
@@ -104,3 +104,4 @@ urllib3==2.2.3
 wcwidth==0.2.13
 yarl==1.18.0
 zipp==3.19.2
+python-decouple==3.8
