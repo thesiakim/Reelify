@@ -25,14 +25,19 @@
         </div>
       </div>
       <div class="profile-text text-center">
-        <h3 class="mb-4">{{ userData.username }}</h3>
+        <h3 class="mb-4 username">{{ userData.username }}</h3>
         <div class="follow-text d-flex flex-row mx-2">
           <p @click="goToUserFollower(userData.username)">
-            팔로우&ensp;{{ userData.followers_count }}&ensp;
+            팔로우&ensp;<strong>{{ userData.followers_count }}</strong
+            >&ensp;
           </p>
           <p @click="goToUserFollowing(userData.username)">
-            &ensp;팔로잉&ensp;{{ userData.followings_count }}
+            &ensp;팔로잉&ensp;<strong>{{ userData.followings_count }}</strong>
           </p>
+        </div>
+        <div class="userLikeGenre">
+          # {{ userLikeGenre[0].name }} # {{ userLikeGenre[1].name }} #
+          {{ userLikeGenre[2].name }}
         </div>
       </div>
       <div
@@ -55,7 +60,7 @@
           isFollow === true
         "
       >
-        <button class="follow-btn" @click="unFollowUser(userData.username)">
+        <button class="unFollow-btn" @click="unFollowUser(userData.username)">
           팔로잉
         </button>
       </div>
@@ -221,13 +226,8 @@ const likeReviewCnt = ref(0);
 const writeReview = ref([]);
 const writeReviewCnt = ref(0);
 const profileImgUrl = ref("");
-console.log(route.params.username);
+const userLikeGenre = ref([]);
 
-// const props = defineProps({
-//   username: String
-// })
-
-// 초기에 팔로잉 했는지 안했는지 -> 수정 필요
 const isFollow = ref(null);
 
 const limitedReviews = ref([]);
@@ -283,6 +283,18 @@ const loadUserData = (username) => {
     .catch((err) => {
       console.log(err);
     });
+
+  // 유저 선호 장르 데이터 요청
+  axios({
+    method: "get",
+    url: `${store.API_URL}/api/v1/user-page/${route.params.username}/preferred_genres/`,
+    headers: {
+      Authorization: `Token ${store.token}`,
+    },
+  }).then((res) => {
+    console.log(res.data);
+    userLikeGenre.value = res.data;
+  });
 };
 
 // 최초 로드
@@ -459,6 +471,9 @@ const leaveReelify = function (username) {
   font-size: 20px;
   cursor: pointer;
 }
+.username {
+  font-weight: bold;
+}
 .update-btn {
   display: flex;
   color: white;
@@ -473,10 +488,18 @@ const leaveReelify = function (username) {
   border-radius: 8px;
 }
 .follow-btn {
-  color: white;
-  background-color: #a1eebd;
+  background-color: #f8f6e3;
+  color: gray;
   border-color: transparent;
   border-radius: 8px;
+  font-size: 20px;
+}
+.unFollow-btn {
+  background-color: #a1eebd;
+  color: white;
+  border-color: transparent;
+  border-radius: 8px;
+  font-size: 20px;
 }
 .review-cnt {
   cursor: pointer;
