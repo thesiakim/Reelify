@@ -190,6 +190,7 @@
       </div>
       <hr />
       <button
+        class="click-btn"
         v-if="
           userData && userData.username && userData.username === store.userName
         "
