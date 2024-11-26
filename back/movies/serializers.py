@@ -5,7 +5,6 @@ from .models import Movie, Genre, Country, Review, Director, Actor, Provider, Vi
 
 User = get_user_model()
 
-# 필터링된 영화 리스트 반환
 class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie

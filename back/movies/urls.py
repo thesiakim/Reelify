@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path('movies/reviews/<int:review_pk>/comments/', ReviewCommentListView.as_view()),  # 특정 리뷰의 댓글, 대댓글 반환
-    path('movies/<int:movie_pk>/rating/', views.movie_graph),
+    path('movies/<int:movie_pk>/rating/', views.movie_graph),                           # 영화 평점 그래프 정보 조회
     path('movies/<int:movie_pk>/like/', views.movie_like_toggle),                       # 특정 영화 추천, 추천 취소
     path('movies/<int:movie_pk>/create-review/', views.create_review),                  # 특정 영화에 리뷰 작성
     path('movies/<int:movie_pk>/reviews/', ReviewListView.as_view()),                   # 특정 영화의 리뷰 목록 반환
@@ -16,6 +16,7 @@ urlpatterns = [
     path('reviews/<int:review_pk>/', views.review),                                     # 특정 리뷰 수정/삭제
     path('movies/<int:movie_pk>/', views.movie_detail),                                 # 영화 상세 페이지 결과 반환
     path('movies/autocomplete/', views.movie_autocomplete),                             # 자동 완성 검색  
+    path('movies/<str:person_type>/<int:person_pk>/', views.get_movies_by_person),      # 배우 및 감독의 영화 조회
 
     path('movies/sample/', views.sample_movies),
     path('movies/box-office/', views.box_office),                                       # 박스 오피스 영화 반환
