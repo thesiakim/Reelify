@@ -560,6 +560,22 @@ def movie_detail(request, movie_pk):
     return Response(serializer.data)
 
 
+# 배우 또는 감독의 영화 목록
+@api_view(['GET'])
+def get_movies_by_person(request, person_type, person_pk):
+    if person_type == 'actor':
+        person = get_object_or_404(Actor, pk=person_pk)
+        movies = person.movies.all()
+    elif person_type == 'director':
+        person = get_object_or_404(Director, pk=person_pk)
+        movies = person.movies.all()
+    else:
+        return Response({'message': '잘못된 요청 타입입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    serializer = MovieListSerializer(movies, many=True)
+    return Response(serializer.data)
+
+
 #-------------------------------------------------------------------------------------------------------------
 
 
