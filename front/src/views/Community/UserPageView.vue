@@ -6,24 +6,20 @@
     >
       <div class="position-relative">
         <!-- 프로필 이미지 -->
-        <img
-          :src="profileImgUrl"
-          class="user-img"
-          alt="profile_img"
-        />
+        <img :src="profileImgUrl" class="user-img" alt="profile_img" />
 
         <!-- 파일 업로드 버튼 -->
-        <div v-if="userData.username === store.userName" class="position-absolute bottom-0 end-0 mb-2 me-2">
+        <div
+          v-if="userData.username === store.userName"
+          class="position-absolute bottom-0 end-0 mb-2 me-2"
+        >
           <input
             type="file"
             ref="fileInput"
             class="d-none"
             @change="uploadProfileImage"
           />
-          <button
-            @click="triggerFileInput"
-            class="badge rounded-pill"
-          >
+          <button @click="triggerFileInput" class="badge rounded-pill">
             편집
           </button>
         </div>
@@ -46,9 +42,10 @@
           isFollow != null &&
           isFollow === false
         "
-        class="follow-btn"
       >
-        <button @click="followUser(userData.username)">팔로우</button>
+        <button class="follow-btn" @click="followUser(userData.username)">
+          팔로우
+        </button>
       </div>
       <div
         v-else-if="
@@ -57,9 +54,10 @@
           isFollow != null &&
           isFollow === true
         "
-        class="follow-btn"
       >
-        <button @click="unFollowUser(userData.username)">팔로잉</button>
+        <button class="follow-btn" @click="unFollowUser(userData.username)">
+          팔로잉
+        </button>
       </div>
       <div
         v-else-if="
@@ -185,6 +183,15 @@
       >
         <h3 class="text-center my-3">아직 추천한 리뷰가 없어요😯</h3>
       </div>
+      <hr />
+      <button
+        v-if="
+          userData && userData.username && userData.username === store.userName
+        "
+        @click="leaveReelify(userData.username)"
+      >
+        Reelify 떠나기
+      </button>
     </div>
   </div>
 </template>
@@ -319,7 +326,7 @@ const uploadProfileImage = async () => {
     });
 
     profileImgUrl.value = `${response.data.profile_img}`;
-    console.log(response.data.profile_img)
+    console.log(response.data.profile_img);
   } catch (error) {
     console.error("이미지 업로드 오류:", error);
     alert("이미지 업로드에 실패했습니다.");
@@ -397,6 +404,36 @@ const goToImageEdit = function (username) {
   console.log(userData.username);
   router.push({ name: "UserProfileEditView", params: { username: username } });
 };
+
+// 회원 탈퇴 기능
+const leaveReelify = function (username) {
+  const answer1 = window.confirm("정말 Reelift를 떠나실 건가요??😲");
+  if (answer1 === true) {
+    const answer2 = window.confirm("정말정말정말요??😱");
+    if (answer2 === true) {
+      const token = store.token;
+      store.logOut();
+      axios({
+        method: "delete",
+        url: `${store.API_URL}/api/v1/user/delete`,
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      })
+        .then((res) => {
+          console.log(res.data);
+          window.confirm("그동안 Reelify를 사랑해주셔서 감사합니다.");
+          router.push({ name: "HomeView" });
+        })
+        .catch((err) => {
+          console.log(err.data);
+          window.confirm("회원탈퇴 중 오류가 발생했습니다.");
+        });
+    }
+  } else {
+    return false;
+  }
+};
 </script>
 
 <style scoped>
@@ -430,6 +467,12 @@ const goToImageEdit = function (username) {
   border-radius: 8px;
 }
 .click-btn {
+  color: white;
+  background-color: #a1eebd;
+  border-color: transparent;
+  border-radius: 8px;
+}
+.follow-btn {
   color: white;
   background-color: #a1eebd;
   border-color: transparent;

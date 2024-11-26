@@ -1,6 +1,6 @@
 <script setup>
 import LoginFormModal from "./components/Accounts/LoginFormModal.vue";
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter, RouterLink, RouterView } from "vue-router";
 import axios from "axios";
 import { useAccountStore } from "./stores/accounts";
@@ -12,10 +12,23 @@ const isHome = computed(() => route.name === "HomeView");
 const isDetail = computed(() => route.name === "MovieDetailView");
 
 const isNavExpanded = ref(true);
-
+const isScreenSmall = ref(window.innerWidth <= 992);
 const toggleNav = () => {
   isNavExpanded.value = !isNavExpanded.value;
 };
+
+// 화면 크기 변경 감지
+const updateScreenSize = () => {
+  isScreenSmall.value = window.innerWidth <= 992;
+};
+
+// 브라우저 리사이즈 이벤트 리스너 등록 및 해제
+onMounted(() => {
+  window.addEventListener("resize", updateScreenSize);
+});
+onUnmounted(() => {
+  window.removeEventListener("resize", updateScreenSize);
+});
 
 const showModal = ref(false);
 
@@ -160,177 +173,191 @@ const logOut = function () {
   store.logOut();
   router.push({ name: "HomeView" });
 };
+
+// 릴봇 페이지 이동 함수
+const goToReelBot = function () {
+  router.push({ name: "ReelBotView" });
+};
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <nav
-        :class="[
-          'navbar',
-          'navbar-expand-lg',
-          navbarPositionClass,
-          isHome || isDetail
-            ? 'bg-transparent text-light'
-            : 'bg-transparent text-dark',
-        ]"
-      >
-        <div class="container-fluid">
-          <RouterLink class="navbar-brand" :to="{ name: 'HomeView' }"
-            >Reelify</RouterLink
-          >
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarSupportedContent"
-            @click="toggleNav"
-            aria-controls="navbarSupportedContent"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <RouterLink
-                  class="routerlink"
-                  :to="{ name: 'MovieListView', params: { page: 1 } }"
-                  :class="{
-                    'text-light': isHome || isDetail,
-                    'text-dark': !isHome && !isDetail,
-                  }"
-                  >영화</RouterLink
-                >
-              </li>
-              <li class="nav-item">
-                <RouterLink
-                  class="routerlink"
-                  :class="{
-                    'text-light': isHome || isDetail,
-                    'text-dark': !isHome && !isDetail,
-                  }"
-                  :to="{ name: 'MovieLegendaryView' }"
-                  >명예의 전당</RouterLink
-                >
-              </li>
-              <li class="nav-item">
-                <RouterLink
-                  class="routerlink"
-                  :class="{
-                    'text-light': isHome || isDetail,
-                    'text-dark': !isHome && !isDetail,
-                  }"
-                  :to="{ name: 'MovieMapView' }"
-                  >주변 영화관</RouterLink
-                >
-              </li>
-              <li class="nav-item">
-                <RouterLink
-                  class="routerlink"
-                  :class="{
-                    'text-light': isHome || isDetail,
-                    'text-dark': !isHome && !isDetail,
-                  }"
-                  :to="{ name: 'MovieRecommendedView' }"
-                  >추천 영화</RouterLink
-                >
-              </li>
-            </ul>
-            <form
-              @submit.prevent="searchMovie"
-              v-show="isNavExpanded"
-              class="d-flex position-relative"
-              role="search"
+  <div>
+    <header>
+      <div class="wrapper">
+        <nav
+          :class="[
+            'navbar',
+            'navbar-expand-lg',
+            navbarPositionClass,
+            isHome || isDetail
+              ? 'bg-transparent text-light'
+              : 'bg-transparent text-dark',
+          ]"
+        >
+          <div class="container-fluid">
+            <RouterLink class="navbar-brand" :to="{ name: 'HomeView' }"
+              >Reelify</RouterLink
             >
-              <input
-                class="form-control me-2"
-                type="text"
-                placeholder="어떤 영화가 궁금하세요?"
-                aria-label="Search"
-                v-model="query"
-                @input="handleInput"
-                @keydown="handleKeydown"
-              />
-              <button class="btn search-btn">Search</button>
-
-              <!-- 자동완성 결과 -->
-              <ul
-                v-if="autocompleteResults.length > 0"
-                class="list-group position-absolute w-100"
-                style="top: 100%; z-index: 1000"
-              >
-                <li
-                  v-for="(result, index) in autocompleteResults"
-                  :key="result.id"
-                  class="list-group-item list-group-item-action autocomplete-item"
-                  :class="{ active: index === activeIndex }"
-                  @click="selectAutocomplete(result.title)"
-                >
-                  {{ result.title }}
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navbarSupportedContent"
+              @click="toggleNav"
+              aria-controls="navbarSupportedContent"
+              aria-expanded="false"
+              aria-label="Toggle navigation"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <RouterLink
+                    class="routerlink"
+                    :to="{ name: 'MovieListView', params: { page: 1 } }"
+                    :class="{
+                      'text-light': isHome || isDetail,
+                      'text-dark': !isHome && !isDetail,
+                    }"
+                    >영화</RouterLink
+                  >
+                </li>
+                <li class="nav-item">
+                  <RouterLink
+                    class="routerlink"
+                    :class="{
+                      'text-light': isHome || isDetail,
+                      'text-dark': !isHome && !isDetail,
+                    }"
+                    :to="{ name: 'MovieLegendaryView' }"
+                    >명예의 전당</RouterLink
+                  >
+                </li>
+                <li class="nav-item">
+                  <RouterLink
+                    class="routerlink"
+                    :class="{
+                      'text-light': isHome || isDetail,
+                      'text-dark': !isHome && !isDetail,
+                    }"
+                    :to="{ name: 'MovieMapView' }"
+                    >주변 영화관</RouterLink
+                  >
+                </li>
+                <li class="nav-item">
+                  <RouterLink
+                    class="routerlink"
+                    :class="{
+                      'text-light': isHome || isDetail,
+                      'text-dark': !isHome && !isDetail,
+                    }"
+                    :to="{ name: 'MovieRecommendedView' }"
+                    >추천 영화</RouterLink
+                  >
                 </li>
               </ul>
-            </form>
+              <form
+                @submit.prevent="searchMovie"
+                v-if="!isScreenSmall"
+                class="d-flex position-relative"
+                role="search"
+              >
+                <input
+                  class="form-control me-2"
+                  type="text"
+                  placeholder="어떤 영화가 궁금하세요?"
+                  aria-label="Search"
+                  v-model="query"
+                  @input="handleInput"
+                  @keydown="handleKeydown"
+                />
+                <button class="btn search-btn">Search</button>
 
-            <RouterLink
-              v-if="store.isLogin === false"
-              class="d-flex routerlink nav-item"
-              :to="{ name: 'SignUpView' }"
-              :class="{
-                'text-light': isHome || isDetail,
-                'text-dark': !isHome && !isDetail,
-              }"
-              >회원가입</RouterLink
-            >
-            <p
-              v-if="store.isLogin === false"
-              @click="moveLoginFormModal"
-              class="d-flex routerlink nav-item relLog"
-              :class="{
-                'text-light': isHome || isDetail,
-                'text-dark': !isHome && !isDetail,
-              }"
-            >
-              로그인
-            </p>
+                <!-- 자동완성 결과 -->
+                <ul
+                  v-if="autocompleteResults.length > 0"
+                  class="list-group position-absolute w-100"
+                  style="top: 100%; z-index: 1000"
+                >
+                  <li
+                    v-for="(result, index) in autocompleteResults"
+                    :key="result.id"
+                    class="list-group-item list-group-item-action autocomplete-item"
+                    :class="{ active: index === activeIndex }"
+                    @click="selectAutocomplete(result.title)"
+                  >
+                    {{ result.title }}
+                  </li>
+                </ul>
+              </form>
 
-            <LoginFormModal
-              v-if="showModal"
-              @close="closeModal"
-              class="text-light login-form-modal"
-            />
+              <RouterLink
+                v-if="store.isLogin === false"
+                class="d-flex routerlink nav-item"
+                :to="{ name: 'SignUpView' }"
+                :class="{
+                  'text-light': isHome || isDetail,
+                  'text-dark': !isHome && !isDetail,
+                }"
+                >회원가입</RouterLink
+              >
+              <p
+                v-if="store.isLogin === false"
+                @click="moveLoginFormModal"
+                class="d-flex routerlink nav-item relLog"
+                :class="{
+                  'text-light': isHome || isDetail,
+                  'text-dark': !isHome && !isDetail,
+                }"
+              >
+                로그인
+              </p>
 
-            <RouterLink
-              v-if="store.isLogin === true"
-              class="d-flex routerlink nav-item"
-              :to="{
-                name: 'UserPageView',
-                params: { username: store.userName },
-              }"
-              :class="{
-                'text-light': isHome || isDetail,
-                'text-dark': !isHome && !isDetail,
-              }"
-              >마이페이지</RouterLink
-            >
-            <p
-              v-if="store.isLogin === true"
-              @click="logOut"
-              class="d-flex routerlink nav-item relLog"
-              :class="{
-                'text-light': isHome || isDetail,
-                'text-dark': !isHome && !isDetail,
-              }"
-            >
-              로그아웃
-            </p>
+              <LoginFormModal
+                v-if="showModal"
+                @close="closeModal"
+                class="text-light login-form-modal"
+              />
+
+              <RouterLink
+                v-if="store.isLogin === true"
+                class="d-flex routerlink nav-item"
+                :to="{
+                  name: 'UserPageView',
+                  params: { username: store.userName },
+                }"
+                :class="{
+                  'text-light': isHome || isDetail,
+                  'text-dark': !isHome && !isDetail,
+                }"
+                >마이페이지</RouterLink
+              >
+              <p
+                v-if="store.isLogin === true"
+                @click="logOut"
+                class="d-flex routerlink nav-item relLog"
+                :class="{
+                  'text-light': isHome || isDetail,
+                  'text-dark': !isHome && !isDetail,
+                }"
+              >
+                로그아웃
+              </p>
+            </div>
           </div>
-        </div>
-      </nav>
-    </div>
-  </header>
-  <RouterView />
+        </nav>
+      </div>
+    </header>
+    <RouterView />
+    <img
+      tabindex="0"
+      @click="goToReelBot"
+      src="@/assets/reelbot.png"
+      alt="로봇 아이콘 제작자: Freepik - Flaticon"
+      class="reelbot"
+    />
+  </div>
 </template>
 
 <style scoped>
@@ -387,6 +414,7 @@ const logOut = function () {
 }
 .search-btn {
   color: #fba1b7;
+  font-weight: bold;
 }
 .navbar-absolute {
   position: absolute;
@@ -404,8 +432,37 @@ const logOut = function () {
 }
 
 .autocomplete-item {
-  font-size: 14px; 
-  color: #333; 
-  font-weight: normal; 
+  font-size: 14px;
+  color: #333;
+  font-weight: normal;
+}
+.reelbot {
+  width: 60px;
+  height: 60px;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 1000;
+  cursor: pointer;
+}
+.reelbot:focus,
+.reelbot:hover {
+  outline: none;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(251, 161, 183, 0.8);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 5px rgba(251, 161, 183, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(251, 161, 183, 1);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(251, 161, 183, 0.5);
+  }
 }
 </style>

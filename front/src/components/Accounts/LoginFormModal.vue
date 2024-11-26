@@ -137,6 +137,7 @@ const closeModal = () => {
 .error-message {
   color: #ff4d4f;
   font-size: 13px;
+  text-shadow: none !important;
 }
 
 /* 로그인 버튼 */

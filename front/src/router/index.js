@@ -17,6 +17,7 @@ import UserFollowingView from "@/views/Community/UserFollowingView.vue";
 import UserUpdateView from "@/views/Accounts/UserUpdateView.vue";
 import { useAccountStore } from "@/stores/accounts";
 import UserProfileEditView from "@/views/Community/UserProfileEditView.vue";
+import ReelBotView from "@/views/Community/ReelBotView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -184,6 +185,11 @@ const router = createRouter({
           next();
         }
       },
+    },
+    {
+      path: "/reelbot",
+      name: "ReelBotView",
+      component: ReelBotView,
     },
   ],
   scrollBehavior(to, from, savedPosition) {

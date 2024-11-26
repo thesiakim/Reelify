@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'silk',
     'accounts',
     'movies',
+    'reelbots',
     'debug_toolbar',
     'rest_framework',
     'rest_framework.authtoken',
@@ -172,6 +173,7 @@ TMDB_API_KEY = env('TMDB_API_KEY')
 KOFIC_API_KEY = env('KOFIC_API_KEY')
 TMDB_ACCESS_TOKEN = env('TMDB_ACCESS_TOKEN')
 EMAIL_PASSWORD = env('EMAIL_HOST_PASSWORD')
+OPENAI_API_KEY = env('OPENAI_API_KEY')
 
 # 캐시 설정
 CACHES = {
