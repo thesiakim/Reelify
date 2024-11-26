@@ -18,6 +18,7 @@
             v-if="movie.poster_path"
             :src="store.getPosterPath(movie.poster_path)"
             :alt="movie.title"
+            @click="goToMovieDetail(movie.id)"
           />
           <p>{{ movie.title }}</p>
         </div>
@@ -30,8 +31,10 @@
 import { ref, watch } from "vue";
 import axios from "axios";
 import { useAccountStore } from "@/stores/accounts";
+import { useRouter } from "vue-router";
 
 const store = useAccountStore();
+const router = useRouter();
 
 const props = defineProps({
   isOpen: Boolean,
@@ -80,6 +83,20 @@ const closeModal = () => {
     console.error("props.onClose가 정의되지 않았습니다.");
   }
 };
+
+// const goToMovieDetail = (movieId) => {
+//   console.log("Navigating to movie detail with ID:", movieId);
+//   try {
+//     router.push({ name: "MovieDetailView", params: { movie_id: String(movieId) } });
+//   } catch (error) {
+//     console.error("Error navigating to MovieDetailView:", error);
+//   }
+// };
+
+const goToMovieDetail = (movieId) => {
+  console.log(movieId)
+};
+
 </script>
 
 <style scoped>

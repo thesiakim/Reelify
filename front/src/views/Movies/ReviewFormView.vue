@@ -92,7 +92,7 @@ const errorMessage = ref("");
 const currentEmoji = computed(() => {
   const rating = formData.value.rating;
   if (rating <= 1) return "😡";
-  if (rating <= 2) return "🫤";
+  if (rating <= 2) return "😣";
   if (rating <= 3) return "🤔";
   if (rating <= 4) return "🤭";
   return "🥰";
