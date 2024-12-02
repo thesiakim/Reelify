@@ -23,146 +23,212 @@
 
 ![Visual Studio Code](https://img.shields.io/badge/Visual%20Studio%20Code-0078d7.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white)
 
+
 ### ⚙ 팀 구성
 
 |       |  Github  |  역할  |
 |:------------:|:------------:|:------------:|
 | **김시아** (조장)  |  [thesiakim](https://github.com/thesiakim)  |  Backend, Frontend  |
-| **강은수** |  [eeunxxu](https://github.com/eeunxxu)  |  Frontend  |
+| **강은수** |  [eeunxxu](https://github.com/eeunxxu)  |  AI, Frontend  |
+
+<br>
+
+### ⚙ API 명세서
+
+https://documenter.getpostman.com/view/26669867/2sAYBVgWfp
+
+<br>
 
 ## 🧬 서비스 소개
+
 ### ⚙ 기획
 
 - TMDB API를 통해 영화와 관련된 정보(줄거리, 배우, 감독, 동영상)를 제공
 - 개인별 맞춤 영화 추천 서비스 제공
 - 영화 리뷰를 기반으로 한 커뮤니티 서비스 제공 
+<br>
 
 ### ⚙ ERD
 
-![ERD](https://github.com/user-attachments/assets/33146c82-eafd-4318-ae2c-b9db0d2c8bd4)
+![reelify_erd](README_assets/reelify_erd.png)
+
 
 - Movie 테이블을 중심으로 Actor, Genre, Director, Country, Provider는 다대다 관계이며 Video는 일대다 관계
 - Comment 테이블에는 parent_commend_id를 지정하여 댓글-대댓글을 위한 계층 구조 설정
+<br>
 
 ### ⚙ Components Map
 
+![image](README_assets/image.png)
+
+<br>
 
 ### ⚙ 회원가입
 
-(사진)
+![email-1](README_assets/email-1.PNG)
+![email-2](README_assets/email-2.PNG)
 
 - dj-rest-auth가 제공하는 이메일 인증 프로세스 활용
 - 회원가입 시 이메일 주소 및 선택한 영화 정보를 포함할 수 있도록 CustomRegisterSerializer 업데이트
 - 인증번호는 최대 5분간 유효하도록 지정했으며, 시간을 초과한 경우 재인증 요청 메시지 출력
 
-(사진)
+<br>
+
+![signup](README_assets/signup.gif)
 
 - 개인별 맞춤 영화 추천 알고리즘을 위한 데이터 수집
 - 사용자가 선택한 장르를 기반으로 인기 영화(TMDB API의 popularity 기준) 중 일부를 랜덤으로 제공
 - 동일한 요청에 대해 Django 캐싱을 사용하여 쿼리 비용 절감 (1시간 유효)
 
+<br>
 
 ### ⚙ 로그인
 
-(사진)
+![login](README_assets/login.png)
+
 
 - 존재하지 않는 username 또는 password가 틀렸을 경우 에러 메시지 출력
 
+<br>
+
 ### ⚙ 자동 완성 검색 및 필터링
 
-(사진)
+![search](README_assets/search.gif)
 
 - Lodash의 debounce를 활용하여 과도한 API 호출 방지 (200ms 적용)
 - 키보드 탐색 및 마우스 클릭으로 검색어을 선택하여 UX 향상  
-  
-(사진)
+
+<br>
+
+![filter](README_assets/filter.gif)
 
 - 중복 조회를 제공하여 다양한 영화 필터링 가능
 - 필터링된 영화에 대하여 개봉일, 리뷰 수, 추천 수, 인기(TMDB API의 popularity)순으로 정렬 제공
 
-(사진)
-- 페이징 처리가 필요한 경우 Pagination 컴포넌트를 공유하여 구현
+<br>
 
 ### ⚙ 내 주변 영화관 찾기
 
-(사진)
+![map](README_assets/map.gif)
 
 - KAKAO MAP API를 활용하여 현재 내 위치를 인식하고 주변 영화관을 마커로 표시
 - 마커 클릭 시 간단한 정보 확인 가능 (이름, 주소, 전화번호, 상영시간표 링크)
 - 상영 시간표 클릭 시 해당 영화관의 네이버 상영 시간표 검색 페이지로 이동
 - 동적 지도 업데이트 : 지도를 드래그하거나 줌을 조정하는 사용자의 이벤트에 실시간으로 반응하여 새로운 중심 위치를 기준으로 영화관 데이터를 다시 검색하고 마커 갱신
 
+<br>
+
 ### ⚙ 박스 오피스 순위
 
-(사진)
+![rank](README_assets/rank.gif)
 
 - 영화 제목, 순위, 포스터 이미지를 얻기 위해 TMDB API와 영화진흥위원회 API를 결합
 - 영화 제목에 특수문자가 있는 경우 제거한 뒤 개봉일과 가장 근접한 영화 데이터 필터링 
 - 동일한 요청에 대해 Django 캐싱을 사용하여 동일 요청 시 API 호출 최소화 (8시간 유효)
 
 
+<br>
+
 
 ### ⚙ 영화 상세 페이지
 
-(사진)
+![login](README_assets/detail.png)
 
 - 상세 페이지에서 제공하는 모든 데이터는 TMDB API를 활용
 - 영화 제목, 원제, 개봉일, 장르, 국가, 상영 시간, 감상 가능 OTT, 포스터, 줄거리, 태그라인, 감독, 배우 정보 제공
 
-(사진)
+<br>
+
+![like](README_assets/like.gif)
 - 회원가입한 사용자의 경우 영화에 추천 가능
 - 추천 및 추천 취소가 가능한 토글 버튼을 통해 값을 변경할 때마다 동적으로 아이콘 변경 
-  
-(사진)
+
+<br>
+
+![moviegraph](README_assets/moviegraph.png)
 - Vue의 Chart.js를 통해 사용자들이 리뷰 작성 시 평가한 rating의 분포도를 그래프로 표현 
 - 가장 높은 분포에 해당하는 별점 강조 
-  
-(사진)
+
+<br>
+
+![reviewlist](README_assets/reviewlist.gif)
 - 리뷰 전체의 평균값과 함께 추천이 높은 순으로 다섯 개의 리뷰 노출 
-  
-(사진)
+
+<br>
+
+![video](README_assets/video.gif)
 - 동영상 썸네일 클릭 시 모달로 바로 재생 가능
+
+<br>
+
+![person](README_assets/person.gif)  
+- 배우 및 감독 사진 클릭 시 모달로 영화 정보 확인 가능
+
+<br>
 
 ### ⚙ 커뮤니티
 
-(사진)
+![review](README_assets/review.gif)  
 - 마우스 오버를 통해 사용자가 선택하는 rating을 실시간으로 감지
 - 글자수가 제한될 경우 에러 메시지를 출력하며 제출 버튼 비활성화
 
-(사진)
+<br>
+
+
+![blur](README_assets/blur.gif)  
 - 스포일러가 체크된 경우 내용이 블러로 처리되며 클릭 시 확인 가능
 - 본인이 작성한 리뷰만 수정, 삭제 버튼 노출
-  
-(사진)
+
+<br>
+
+![scroll](README_assets/scroll.gif)  
 - 각 리뷰에 대한 댓글 목록은 무한 스크롤이 적용된 모달창으로 확인 가능
 - 댓글, 대댓글을 작성할 수 있으며 본인이 작성한 댓글, 대댓글에만 삭제 버튼 노출
 - 화살표 클릭 시 대댓글 작성창 활성화
 
 
+<br>
+
 ### ⚙ 유저 페이지
 
-(사진)
+![followtoggle](README_assets/followtoggle.gif)  
 - 본인의 페이지에서만 프로필 사진 편집 버튼 노출
 - 팔로우, 팔로잉 수를 확인할 수 있으며 버튼을 토글할 때마다 실시간으로 현재 숫자 반영
-  
-(사진)
 - 클릭 시 팔로우, 팔로잉 목록 확인 가능
-  
-(사진)
+
+<br>
+
+![chart](README_assets/chart.png)  
 - Vue의 Chart.js를 통해 해당 사용자의 별점 분포도를 그래프로 확인 가능
 
-(사진)
+<br>
+
+![user](README_assets/user.gif)  
 - 해당 사용자의 추천 영화, 작성 리뷰, 댓글 목록 확인 가능 
-  
-(사진)
+
+<br>  
+
+![reset](README_assets/reset.png)  
 - 정보 수정 버튼 클릭 시 비밀번호 변경창으로 이동하며 dj-rest-auth가 제공하는 엔드포인트 활용
 
 
+<br>
+
 ### ⚙ 개인별 영화 추천 
 
-(사진)
+![recommend](README_assets/recommend.gif)  
 - 협업 필터링 및 콘텐츠 기반 알고리즘 결합
 - 하단 설명 참고
+
+<br>
+
+### ⚙ 챗봇
+
+![chatbot](README_assets/chatbot.png)  
+- OpenAI API를 활용한 대화형 영화 추천 챗봇
+
+<br>
+
 
 ## 📈 영화 추천 알고리즘 
 
@@ -170,6 +236,9 @@
 - 사용자의 리뷰, 추천, 영화 속성을 기반으로 좋아할 만한 영화 추천하기
   
 ### 실행 흐름
+
+![algo](README_assets/algo.png)
+
 
 #### 1. 사용자 유사성 계산 - 협업 필터링
 
@@ -414,8 +483,7 @@ def get_combined_recommendations(user, max_recommendations=15):
 
 (1) 쿼리 튜닝
 
-![전](https://github.com/user-attachments/assets/d99582ce-c155-466d-9381-d6e9d0dd35a0)
-![후](https://github.com/user-attachments/assets/c30f34ad-76a2-4b8b-a6ed-f492813313ca)
+![query](README_assets/query.png)  
 
 
 | 항목            | 초기 성능      | 개선된 성능       | 개선율          |
@@ -465,3 +533,45 @@ def save(self, *args, **kwargs):
      - 기존 리뷰를 삭제한 경우
      - 새로운 리뷰를 작성한 경우
 
+
+<br>
+
+## ⚙ 실행
+
+- 백엔드 
+
+```
+cd back
+```
+
+```
+pip install -r requirements.txt
+```
+```
+python manage.py migrate
+```
+```
+python manage.py loaddata db.json
+```
+```
+python manage.py loaddata dummy.json
+```
+
+```
+python manage.py runserver
+```
+<br>
+
+- 프론트엔드
+
+```
+cd front
+```
+
+```
+npm install
+```
+
+```
+npm run dev
+```
